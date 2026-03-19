@@ -1101,7 +1101,7 @@ Respond ONLY with valid JSON, no markdown:
 async function callGemini(prompt){
   const r=await fetch(`/api/gemini`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
   if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'API error — please check your key in Settings');}
-  const text=await r.text();const d=json.parse(text)
+  const text=await r.text();const d=JSON.parse(text)
   const raw=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
   return JSON.parse(raw.replace(/```json|```/g,'').trim());
 }
