@@ -1,8 +1,3 @@
-
-Ross Petry
-8:59 PM (0 minutes ago)
-to me
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
