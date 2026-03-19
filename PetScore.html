@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PetScore">
+<meta name="theme-color" content="#0F1F3D">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>PetScore — Match Your Pet to the Perfect Product</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230F1F3D'/%3E%3Cellipse cx='50' cy='66' rx='18' ry='14' fill='%23C9A84C'/%3E%3Cellipse cx='30' cy='49' rx='8' ry='10' fill='%23C9A84C'/%3E%3Cellipse cx='70' cy='49' rx='8' ry='10' fill='%23C9A84C'/%3E%3Cellipse cx='40' cy='40' rx='7' ry='9' fill='%23C9A84C'/%3E%3Cellipse cx='60' cy='40' rx='7' ry='9' fill='%23C9A84C'/%3E%3Ccircle cx='76' cy='26' r='13' fill='%23C9A84C'/%3E%3Ctext x='76' y='31' text-anchor='middle' font-family='Georgia' font-size='13' font-weight='bold' fill='%230F1F3D'%3E%E2%9C%93%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0F1F3D; --navy-mid: #1A3260; --navy-light: #243C72;
+  --gold: #B8943F; --gold-light: #D4AF6A; --gold-dim: rgba(184,148,63,0.12);
+  --cream: #FAF8F4; --white: #FFFFFF;
+  --border: rgba(15,31,61,0.09); --border-mid: rgba(15,31,61,0.16);
+  --text: #0F1F3D; --text-mid: #4A5568; --text-dim: #8896A8;
+  --green: #2D7A5F; --green-dim: rgba(45,122,95,0.1);
+  --red: #C0392B; --red-dim: rgba(192,57,43,0.08);
+  --amber: #B7770D; --amber-dim: rgba(183,119,13,0.1);
+  --shadow-sm: 0 1px 4px rgba(15,31,61,0.07);
+  --shadow: 0 4px 16px rgba(15,31,61,0.1);
+  --shadow-lg: 0 12px 40px rgba(15,31,61,0.14);
+  --radius: 12px; --radius-lg: 18px;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--cream); font-family: 'Inter', sans-serif; color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── SETUP ── */
+#screen-setup { min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 24px; background: var(--navy); }
+#screen-setup.active { display: flex; }
+#screen-setup::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 20% 50%, rgba(184,148,63,0.15) 0%, transparent 60%); pointer-events:none; }
+.setup-card { background: var(--white); border-radius: 20px; padding: 44px 38px; max-width: 440px; width: 100%; position: relative; z-index: 1; box-shadow: var(--shadow-lg); }
+.setup-brand { text-align: center; margin-bottom: 32px; }
+.brand-mark { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.brand-icon { width: 40px; height: 40px; background: var(--navy); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.brand-icon svg { width: 22px; height: 22px; fill: var(--gold-light); }
+.brand-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; color: var(--navy); }
+.brand-name em { color: var(--gold); font-style: italic; }
+.brand-tag { font-size: 12px; color: var(--text-dim); letter-spacing: 0.03em; }
+.setup-notice { background: #FEF9EC; border: 1px solid rgba(183,119,13,0.2); border-radius: 9px; padding: 11px 13px; font-size: 12px; color: var(--amber); line-height: 1.6; margin-bottom: 22px; }
+.field-lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-mid); margin-bottom: 6px; display: block; }
+.inp-wrap { position: relative; margin-bottom: 8px; }
+.inp-wrap input { width: 100%; background: var(--cream); border: 1.5px solid var(--border-mid); border-radius: 9px; padding: 12px 42px 12px 13px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+.inp-wrap input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(15,31,61,0.07); }
+.inp-wrap input::placeholder { color: var(--text-dim); }
+.eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 15px; padding: 4px; -webkit-tap-highlight-color: transparent; }
+.setup-help { font-size: 12px; color: var(--text-dim); line-height: 1.65; margin-bottom: 22px; }
+.setup-help a { color: var(--navy); font-weight: 500; }
+.err-msg { font-size: 12px; color: var(--red); background: var(--red-dim); border-radius: 8px; padding: 9px 13px; margin-bottom: 13px; display: none; border: 1px solid rgba(192,57,43,0.15); }
+.err-msg.show { display: block; }
+
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+.btn-navy { background: var(--navy); color: var(--white); padding: 14px 22px; font-size: 13px; width: 100%; }
+.btn-navy:hover { background: var(--navy-mid); box-shadow: var(--shadow); transform: translateY(-1px); }
+.btn-navy:active { transform: none; }
+.btn-gold { background: var(--gold); color: var(--white); padding: 12px 18px; font-size: 13px; }
+.btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+.btn-outline { background: transparent; border: 1.5px solid var(--border-mid); color: var(--text-mid); padding: 11px 18px; font-size: 13px; }
+.btn-outline:hover { border-color: var(--navy); color: var(--navy); }
+.btn-ghost { background: rgba(15,31,61,0.05); color: var(--text-mid); padding: 9px 14px; font-size: 12px; border-radius: 8px; }
+.btn-ghost:hover { background: rgba(15,31,61,0.09); color: var(--navy); }
+.btn-sm { padding: 8px 14px; font-size: 12px; }
+
+/* ── TOP NAV ── */
+.topnav { background: var(--navy); position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 12px rgba(15,31,61,0.2); }
+.topnav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 54px; padding: 0 20px; }
+.nav-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.nav-brand-icon { width: 30px; height: 30px; background: rgba(184,148,63,0.2); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+.nav-brand-icon svg { width: 16px; height: 16px; fill: var(--gold-light); }
+.nav-brand-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--white); }
+.nav-brand-name em { color: var(--gold-light); font-style: italic; }
+.nav-actions { display: flex; align-items: center; gap: 6px; }
+.nav-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.75); padding: 7px 12px; border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+.nav-btn:hover { background: rgba(255,255,255,0.14); color: var(--white); }
+.nav-btn.active-nav { background: var(--gold); color: var(--navy); border-color: var(--gold); font-weight: 600; }
+
+/* ── PAGE WRAPPER ── */
+.page { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
+
+/* ── WELCOME SCREEN ── */
+#screen-welcome { display: none; }
+#screen-welcome.active { display: block; }
+.welcome-hero { background: var(--navy); border-radius: var(--radius-lg); padding: 48px 40px; margin-bottom: 28px; position: relative; overflow: hidden; }
+.welcome-hero::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 80% 20%, rgba(184,148,63,0.2) 0%, transparent 60%); }
+.welcome-hero-content { position: relative; z-index: 1; max-width: 560px; }
+.welcome-eyebrow { display: inline-flex; align-items: center; gap: 7px; background: rgba(184,148,63,0.2); border: 1px solid rgba(184,148,63,0.3); color: var(--gold-light); padding: 5px 13px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px; }
+.welcome-h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px,4vw,46px); font-weight: 700; color: var(--white); line-height: 1.1; margin-bottom: 14px; }
+.welcome-h1 em { color: var(--gold-light); font-style: italic; }
+.welcome-sub { font-size: 15px; color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 28px; font-weight: 300; max-width: 480px; }
+.welcome-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.welcome-btns .btn-gold { font-size: 14px; padding: 14px 24px; }
+.welcome-sample-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); padding: 14px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+.welcome-sample-btn:hover { background: rgba(255,255,255,0.16); color: var(--white); }
+
+/* HOW IT WORKS */
+.how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
+@media(max-width:600px){ .how-grid{grid-template-columns:1fr;} }
+.how-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 20px; box-shadow: var(--shadow-sm); }
+.how-num { width: 32px; height: 32px; background: var(--navy); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 700; color: var(--gold-light); margin-bottom: 12px; }
+.how-title { font-weight: 600; font-size: 14px; color: var(--navy); margin-bottom: 6px; }
+.how-body { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+
+/* TESTIMONIALS */
+.testimonials-section { margin-bottom: 28px; }
+.section-heading { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+.trust-bar { display: flex; align-items: center; gap: 20px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm); flex-wrap: wrap; gap: 14px; }
+.trust-stat { display: flex; flex-direction: column; gap: 2px; }
+.trust-num { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: var(--navy); }
+.trust-lbl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+.trust-divider { width: 1px; height: 36px; background: var(--border); }
+.stars { color: var(--gold); font-size: 14px; letter-spacing: 1px; }
+.testimonials-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+@media(max-width:640px){ .testimonials-grid{grid-template-columns:1fr;} }
+.testimonial { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); }
+.testimonial-stars { color: var(--gold); font-size: 13px; margin-bottom: 9px; }
+.testimonial-text { font-size: 13px; color: var(--text-mid); line-height: 1.65; margin-bottom: 12px; font-style: italic; }
+.testimonial-author { display: flex; align-items: center; gap: 9px; }
+.testimonial-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--white); flex-shrink: 0; }
+.testimonial-name { font-size: 12px; font-weight: 600; color: var(--navy); }
+.testimonial-pet { font-size: 11px; color: var(--text-dim); }
+
+/* ── MAIN TOOL SCREEN ── */
+#screen-tool { display: none; }
+#screen-tool.active { display: block; }
+
+/* MODE TABS */
+.mode-tabs { display: flex; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 4px; margin-bottom: 20px; box-shadow: var(--shadow-sm); max-width: 380px; }
+.mode-tab { flex: 1; padding: 9px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--text-dim); text-align: center; cursor: pointer; transition: all 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; }
+.mode-tab.active { background: var(--navy); color: var(--white); box-shadow: var(--shadow-sm); }
+
+/* SAVED PET BANNER */
+.saved-pet-banner { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: var(--shadow-sm); }
+.saved-pet-info { display: flex; align-items: center; gap: 10px; }
+.saved-pet-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+.saved-pet-text { font-size: 13px; color: var(--text-mid); }
+.saved-pet-text strong { color: var(--navy); font-weight: 600; }
+.saved-pet-actions { display: flex; gap: 7px; flex-shrink: 0; }
+
+/* DISCLAIMER */
+.disclaimer { background: #FEF9EC; border: 1px solid rgba(183,119,13,0.2); border-radius: var(--radius); padding: 11px 15px; margin-bottom: 18px; }
+.disclaimer p { font-size: 12px; color: var(--amber); line-height: 1.6; }
+
+/* CARD */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 13px; box-shadow: var(--shadow-sm); }
+.card-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.card-icon { width: 34px; height: 34px; background: var(--navy); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-icon svg { width: 17px; height: 17px; fill: var(--gold-light); }
+.card-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 700; color: var(--navy); }
+.card-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+
+/* PET SELECTOR */
+.pet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 7px; margin-bottom: 20px; }
+@media(max-width:480px){ .pet-grid{grid-template-columns:repeat(2,1fr);} }
+.pet-opt { background: var(--cream); border: 1.5px solid var(--border); border-radius: 9px; padding: 11px 13px; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 9px; user-select: none; -webkit-tap-highlight-color: transparent; }
+.pet-opt:hover { border-color: var(--navy-light); background: var(--white); }
+.pet-opt.sel { border-color: var(--navy); background: rgba(15,31,61,0.04); }
+.pet-dot { width: 7px; height: 7px; border-radius: 50%; border: 2px solid var(--border-mid); flex-shrink: 0; transition: all 0.18s; }
+.pet-opt.sel .pet-dot { background: var(--navy); border-color: var(--navy); }
+.pet-lbl { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+.pet-opt.sel .pet-lbl { color: var(--navy); font-weight: 600; }
+
+/* FIELDS */
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 11px; }
+@media(max-width:520px){ .f-row{grid-template-columns:1fr;} .card{padding:18px 15px;} }
+.f { display: flex; flex-direction: column; gap: 5px; }
+.f label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-mid); }
+select, input[type="text"] { -webkit-appearance: none; appearance: none; background: var(--cream); border: 1.5px solid var(--border-mid); border-radius: 9px; padding: 11px 12px; font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.2s; width: 100%; }
+select { background-image: url("data:image/svg+xml,%3Csvg width='11' height='6' viewBox='0 0 11 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5.5 5L10 1' stroke='%238896A8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+select option { background: #fff; }
+select:focus, input[type="text"]:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(15,31,61,0.07); background: var(--white); }
+input[type="text"]::placeholder { color: var(--text-dim); }
+.size-hint { font-size: 11px; color: var(--text-dim); margin-top: 3px; font-style: italic; }
+
+/* PRODUCT SELECTOR */
+.prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 7px; margin-bottom: 14px; }
+@media(max-width:480px){ .prod-grid{grid-template-columns:repeat(2,1fr);} }
+.prod-opt { background: var(--cream); border: 1.5px solid var(--border); border-radius: 9px; padding: 10px 12px; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 8px; user-select: none; -webkit-tap-highlight-color: transparent; }
+.prod-opt:hover { border-color: var(--navy-light); background: var(--white); }
+.prod-opt.sel { border-color: var(--navy); background: rgba(15,31,61,0.04); }
+.prod-dot { width: 6px; height: 6px; border-radius: 50%; border: 2px solid var(--border-mid); flex-shrink: 0; transition: all 0.18s; }
+.prod-opt.sel .prod-dot { background: var(--navy); border-color: var(--navy); }
+.prod-lbl { font-size: 12px; font-weight: 500; color: var(--text-mid); }
+.prod-opt.sel .prod-lbl { color: var(--navy); font-weight: 600; }
+
+/* COMPARE GRID */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+@media(max-width:640px){ .compare-grid{grid-template-columns:1fr;} }
+.compare-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); }
+.compare-lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 13px; padding-bottom: 9px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px; }
+.compare-lbl span { background: var(--navy); color: var(--white); width: 19px; height: 19px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+
+/* LOADING */
+#loading-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; }
+#loading-overlay.active { display: flex; animation: fadeUp 0.4s ease both; }
+.loader-ring { width: 42px; height: 42px; border: 2px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 18px; }
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 5px; }
+.loader-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 22px; }
+.loader-steps { display: flex; flex-direction: column; gap: 5px; max-width: 240px; width: 100%; }
+.loader-step { font-size: 12px; color: var(--text-mid); padding: 7px 12px; background: var(--white); border: 1px solid var(--border); border-radius: 7px; animation: stepIn 0.4s ease both; box-shadow: var(--shadow-sm); }
+.loader-step:nth-child(1){animation-delay:0.3s}.loader-step:nth-child(2){animation-delay:0.9s}.loader-step:nth-child(3){animation-delay:1.5s}.loader-step:nth-child(4){animation-delay:2.1s}
+@keyframes stepIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+/* RESULTS */
+#results-section { display: none; }
+#results-section.active { display: block; animation: fadeUp 0.5s ease both; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* SCORE HEADER */
+.score-hdr { background: var(--navy); border-radius: var(--radius-lg); padding: 28px; margin-bottom: 12px; position: relative; overflow: hidden; box-shadow: var(--shadow-lg); }
+.score-hdr::before { content:''; position:absolute; top:-50px; right:-50px; width:220px; height:220px; background: radial-gradient(circle, rgba(184,148,63,0.22) 0%, transparent 70%); }
+.score-hdr-inner { position: relative; z-index: 1; }
+.score-hdr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.score-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 5px; opacity: 0.8; }
+.score-num { font-family: 'Cormorant Garamond', serif; font-size: 72px; font-weight: 700; line-height: 1; }
+.score-denom { font-size: 22px; font-weight: 400; opacity: 0.45; }
+.score-verdict { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; color: var(--white); margin-bottom: 3px; }
+.score-summary-text { font-size: 12px; color: rgba(255,255,255,0.5); }
+.score-ring { width: 84px; height: 84px; position: relative; flex-shrink: 0; }
+.score-ring svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 7; }
+.ring-fill { fill: none; stroke-width: 7; stroke-linecap: round; stroke-dasharray: 208; stroke-dashoffset: 208; transition: stroke-dashoffset 1.5s cubic-bezier(0.16,1,0.3,1); }
+.ring-txt { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-pct { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; color: var(--white); }
+.ring-lbl { font-size: 8px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.05em; }
+.score-bar-row { }
+.score-bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.35); margin-bottom: 5px; }
+.score-bar-track { height: 3px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); width: 0; transition: width 1.5s cubic-bezier(0.16,1,0.3,1); }
+
+/* SHARE BAR */
+.share-bar { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: var(--shadow-sm); flex-wrap: wrap; }
+.share-bar-text { font-size: 13px; color: var(--text-mid); }
+.share-bar-text strong { color: var(--navy); }
+.share-bar-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+/* RESULT DISCLAIMER */
+.result-disc { background: #FEF9EC; border: 1px solid rgba(183,119,13,0.2); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; }
+.result-disc p { font-size: 12px; color: var(--amber); line-height: 1.6; }
+
+/* SECTION */
+.section { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 11px; box-shadow: var(--shadow-sm); }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.body-text { font-size: 14px; line-height: 1.8; color: var(--text-mid); white-space: pre-line; }
+
+/* CATS */
+.cats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+@media(max-width:520px){ .cats-grid{grid-template-columns:repeat(2,1fr);} }
+.cat-card { background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; }
+.cat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.cat-name { font-size: 10px; font-weight: 600; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.05em; }
+.cat-score { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; }
+.cat-track { height: 3px; background: var(--border); border-radius: 999px; overflow: hidden; margin-bottom: 5px; }
+.cat-bar { height: 100%; border-radius: 999px; width: 0; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+.cat-note { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+
+/* INSIGHTS */
+.insights-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+@media(max-width:520px){ .insights-grid{grid-template-columns:1fr;} }
+.insight { background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.insight-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-mid); margin-bottom: 5px; }
+.insight-val { font-size: 13px; color: var(--text-mid); line-height: 1.55; }
+
+/* PROS CONS */
+.pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 11px; }
+@media(max-width:520px){ .pc-grid{grid-template-columns:1fr;} }
+.pc-box { border-radius: var(--radius); padding: 16px; }
+.pc-box.pros { background: var(--green-dim); border: 1px solid rgba(45,122,95,0.15); }
+.pc-box.cons { background: var(--red-dim); border: 1px solid rgba(192,57,43,0.12); }
+.pc-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+.pros .pc-title{color:var(--green);}.cons .pc-title{color:var(--red);}
+.pc-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.pc-list li { font-size: 13px; color: var(--text-mid); display: flex; gap: 7px; align-items: flex-start; line-height: 1.5; }
+.pros li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;font-size:11px;margin-top:2px;}
+.cons li::before{content:'✗';color:var(--red);font-weight:700;flex-shrink:0;font-size:11px;margin-top:2px;}
+
+/* RECS */
+.rec-list { display: flex; flex-direction: column; gap: 7px; }
+.rec-item { background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-decoration: none; transition: all 0.18s; }
+.rec-item:hover { border-color: var(--navy); background: var(--white); box-shadow: var(--shadow-sm); }
+.rec-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.rec-rank { width: 24px; height: 24px; background: var(--navy); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--white); flex-shrink: 0; }
+.rec-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.rec-why { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+.rec-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.rec-badge { background: var(--gold-dim); border: 1px solid rgba(184,148,63,0.2); color: var(--gold); padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+.rec-link { background: var(--navy); color: var(--white); padding: 6px 11px; border-radius: 6px; font-size: 10px; font-weight: 600; text-decoration: none; }
+.rec-link:hover { opacity: 0.85; }
+
+/* RESULT ACTIONS */
+.result-actions { display: flex; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
+.result-actions .btn-outline { flex: 1; min-width: 130px; }
+.result-actions .btn-gold { flex: 1; min-width: 130px; }
+
+/* COMPARE RESULTS */
+.compare-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+@media(max-width:580px){ .compare-scores{grid-template-columns:1fr;} }
+.compare-score-card { background: var(--navy); border-radius: var(--radius-lg); padding: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+.compare-score-card::before { content:''; position:absolute; top:-30px; right:-30px; width:140px; height:140px; background: radial-gradient(circle, rgba(184,148,63,0.2) 0%, transparent 70%); }
+.compare-score-inner { position: relative; z-index: 1; }
+.compare-lbl2 { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 7px; opacity: 0.8; }
+.compare-score-big { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 700; line-height: 1; }
+.compare-verdict { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: var(--white); margin: 3px 0; }
+.compare-prod-name { font-size: 11px; color: rgba(255,255,255,0.45); }
+.winner-badge { position: absolute; top: 14px; right: 14px; background: var(--gold); color: var(--navy); padding: 4px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* HISTORY SCREEN */
+#screen-history { display: none; }
+#screen-history.active { display: block; }
+.history-empty { text-align: center; padding: 60px 24px; }
+.history-empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.history-empty-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.history-empty-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; }
+.history-list { display: flex; flex-direction: column; gap: 9px; }
+.history-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; transition: all 0.18s; box-shadow: var(--shadow-sm); }
+.history-item:hover { border-color: var(--navy); box-shadow: var(--shadow); }
+.history-left { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.history-score-badge { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.history-score-num { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; color: var(--white); }
+.history-title { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.history-meta { font-size: 12px; color: var(--text-dim); }
+.history-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.history-verdict { font-size: 12px; color: var(--text-mid); font-style: italic; display: none; }
+@media(min-width:500px){ .history-verdict{display:block;} }
+.history-arrow { color: var(--text-dim); font-size: 16px; }
+.history-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+
+/* SAMPLE REPORT MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15,31,61,0.6); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--white); border-radius: var(--radius-lg); padding: 28px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: fadeUp 0.3s ease both; }
+.modal-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--navy); }
+.modal-close { background: none; border: none; font-size: 20px; color: var(--text-dim); cursor: pointer; padding: 4px; -webkit-tap-highlight-color: transparent; }
+.modal-close:hover { color: var(--navy); }
+
+/* SHARE MODAL */
+.share-url-box { background: var(--cream); border: 1.5px solid var(--border-mid); border-radius: 9px; padding: 11px 13px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-mid); word-break: break-all; margin-bottom: 12px; }
+.copy-success { font-size: 12px; color: var(--green); display: none; margin-top: 6px; }
+.copy-success.show { display: block; }
+
+/* ── JOURNAL ── */
+#screen-journal { display: none; }
+#screen-journal.active { display: block; }
+.journal-empty { text-align:center; padding:50px 24px; }
+.journal-empty-icon { font-size:44px; margin-bottom:14px; opacity:0.3; }
+.journal-form { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px 24px; margin-bottom:14px; box-shadow:var(--shadow-sm); }
+.journal-form-title { font-family:'Cormorant Garamond',serif; font-size:17px; font-weight:700; color:var(--navy); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.star-rating { display:flex; gap:6px; margin-bottom:4px; }
+.star { font-size:24px; cursor:pointer; opacity:0.3; transition:opacity 0.15s; -webkit-tap-highlight-color:transparent; }
+.star.active { opacity:1; }
+.journal-list { display:flex; flex-direction:column; gap:10px; }
+.journal-item { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); }
+.journal-item-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.journal-item-title { font-size:14px; font-weight:600; color:var(--navy); margin-bottom:3px; }
+.journal-item-meta { font-size:12px; color:var(--text-dim); }
+.journal-scores { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+.journal-score-badge { padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; }
+.journal-score-badge.ai { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(184,148,63,0.2); }
+.journal-score-badge.user { background:rgba(15,31,61,0.06); color:var(--navy); border:1px solid var(--border); }
+.journal-item-notes { font-size:13px; color:var(--text-mid); line-height:1.6; font-style:italic; }
+.journal-item-actions { display:flex; gap:6px; margin-top:10px; }
+.journal-stars { color:var(--gold); font-size:14px; }
+
+/* ── WEEKLY PICKS ── */
+.weekly-picks-section { background:var(--navy); border-radius:var(--radius-lg); padding:24px; margin-bottom:14px; position:relative; overflow:hidden; }
+.weekly-picks-section::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; background:radial-gradient(circle,rgba(184,148,63,0.2) 0%,transparent 70%); }
+.weekly-picks-inner { position:relative; z-index:1; }
+.weekly-picks-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.weekly-picks-title { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:var(--white); }
+.weekly-picks-sub { font-size:12px; color:rgba(255,255,255,0.5); margin-top:2px; }
+.weekly-picks-badge { background:rgba(184,148,63,0.2); border:1px solid rgba(184,148,63,0.3); color:var(--gold-light); padding:5px 12px; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; }
+.picks-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media(max-width:560px){ .picks-grid{grid-template-columns:1fr;} }
+.pick-card { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius); padding:16px; transition:background 0.2s; cursor:pointer; }
+.pick-card:hover { background:rgba(255,255,255,0.12); }
+.pick-rank { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-light); margin-bottom:8px; opacity:0.8; }
+.pick-name { font-size:13px; font-weight:600; color:var(--white); margin-bottom:4px; }
+.pick-reason { font-size:11px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:10px; }
+.pick-score { display:inline-flex; align-items:center; gap:5px; background:rgba(184,148,63,0.2); border:1px solid rgba(184,148,63,0.3); color:var(--gold-light); padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; }
+.picks-loading { text-align:center; padding:30px; color:rgba(255,255,255,0.5); font-size:13px; }
+
+/* ── SEASONAL REMINDER ── */
+.seasonal-banner { border-radius:var(--radius); padding:14px 18px; margin-bottom:16px; display:flex; gap:12px; align-items:flex-start; }
+.seasonal-banner.winter { background:rgba(99,142,199,0.12); border:1px solid rgba(99,142,199,0.25); }
+.seasonal-banner.spring { background:rgba(45,122,95,0.1); border:1px solid rgba(45,122,95,0.2); }
+.seasonal-banner.summer { background:rgba(184,148,63,0.12); border:1px solid rgba(184,148,63,0.25); }
+.seasonal-banner.autumn { background:rgba(192,100,43,0.1); border:1px solid rgba(192,100,43,0.2); }
+.seasonal-icon { font-size:22px; flex-shrink:0; }
+.seasonal-text { font-size:13px; color:var(--text-mid); line-height:1.6; }
+.seasonal-text strong { color:var(--navy); display:block; margin-bottom:2px; font-size:13px; }
+.seasonal-cta { display:inline-flex; align-items:center; gap:5px; margin-top:7px; font-size:12px; font-weight:600; color:var(--navy); cursor:pointer; text-decoration:underline; -webkit-tap-highlight-color:transparent; }
+
+/* ── SCORE COMPARISON ── */
+.comparison-section { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px 24px; margin-bottom:14px; box-shadow:var(--shadow-sm); }
+.comparison-empty { text-align:center; padding:30px; color:var(--text-dim); font-size:13px; }
+.comparison-list { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.comparison-row { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--cream); border-radius:var(--radius); border:1px solid var(--border); }
+.comparison-pos { width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; font-size:14px; font-weight:700; color:var(--white); flex-shrink:0; }
+.comparison-info { flex:1; min-width:0; }
+.comparison-name { font-size:13px; font-weight:600; color:var(--navy); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.comparison-pet { font-size:11px; color:var(--text-dim); }
+.comparison-score { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; flex-shrink:0; }
+.comparison-bar-wrap { flex:1; max-width:100px; }
+.comparison-bar-track { height:4px; background:var(--border); border-radius:999px; overflow:hidden; }
+.comparison-bar-fill { height:100%; border-radius:999px; transition:width 1s ease; }
+.best-badge { background:var(--gold-dim); border:1px solid rgba(184,148,63,0.2); color:var(--gold); padding:3px 8px; border-radius:999px; font-size:10px; font-weight:600; flex-shrink:0; }
+
+/* ── PWA INSTALL BANNER ── */
+.pwa-banner { background:var(--navy); border-radius:var(--radius); padding:13px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.pwa-banner-left { display:flex; align-items:center; gap:10px; }
+.pwa-banner-icon { width:36px; height:36px; background:rgba(184,148,63,0.2); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.pwa-banner-text { font-size:13px; color:rgba(255,255,255,0.8); line-height:1.4; }
+.pwa-banner-text strong { color:var(--white); display:block; font-size:13px; }
+.pwa-banner-actions { display:flex; gap:7px; flex-shrink:0; }
+.pwa-install-btn { background:var(--gold); color:var(--navy); border:none; padding:8px 14px; border-radius:7px; font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; }
+.pwa-dismiss-btn { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); border:none; padding:8px 10px; border-radius:7px; font-family:'Inter',sans-serif; font-size:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+
+/* ── DAILY TIPS ── */
+.daily-tips-section { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; margin-bottom:20px; box-shadow:var(--shadow-sm); }
+.daily-tips-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.daily-tips-title { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:var(--navy); }
+.daily-tips-sub { font-size:12px; color:var(--text-dim); margin-top:2px; }
+.daily-tips-badge { background:var(--gold-dim); border:1px solid rgba(184,148,63,0.2); color:var(--gold); padding:4px 11px; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; }
+.tips-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media(max-width:580px){ .tips-grid{grid-template-columns:1fr;} }
+.tip-card { background:var(--cream); border:1px solid var(--border); border-radius:var(--radius); padding:16px; transition:all 0.2s; }
+.tip-card:hover { border-color:var(--navy-light); box-shadow:var(--shadow-sm); }
+.tip-category { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+.tip-text { font-size:13px; color:var(--text-mid); line-height:1.65; }
+.tips-loading { display:flex; align-items:center; justify-content:center; gap:10px; padding:30px; color:var(--text-dim); font-size:13px; }
+.tips-loading-ring { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--navy); border-radius:50%; animation:spin 0.8s linear infinite; flex-shrink:0; }
+.tips-no-profile { text-align:center; padding:24px; color:var(--text-dim); font-size:13px; }
+.tips-no-profile a { color:var(--navy); font-weight:600; cursor:pointer; text-decoration:underline; }
+.tips-refresh { background:none; border:none; color:var(--text-dim); font-size:12px; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:5px; padding:4px; transition:color 0.2s; -webkit-tap-highlight-color:transparent; }
+.tips-refresh:hover { color:var(--navy); }
+
+/* ── EMAIL CAPTURE ── */
+.email-capture { background:var(--navy); border-radius:var(--radius-lg); padding:24px; margin-bottom:14px; position:relative; overflow:hidden; }
+.email-capture::before { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; background:radial-gradient(circle,rgba(184,148,63,0.2) 0%,transparent 70%); }
+.email-capture-inner { position:relative; z-index:1; }
+.email-capture-title { font-family:'Cormorant Garamond',serif; font-size:19px; font-weight:700; color:var(--white); margin-bottom:6px; }
+.email-capture-sub { font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:16px; line-height:1.5; }
+.email-capture-form { display:flex; gap:8px; flex-wrap:wrap; }
+.email-capture-form input { flex:1; min-width:200px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:9px; padding:12px 14px; font-family:'Inter',sans-serif; font-size:14px; color:var(--white); outline:none; transition:border-color 0.2s; -webkit-appearance:none; }
+.email-capture-form input::placeholder { color:rgba(255,255,255,0.4); }
+.email-capture-form input:focus { border-color:var(--gold-light); }
+.email-capture-success { font-size:13px; color:var(--gold-light); margin-top:10px; display:none; }
+.email-capture-success.show { display:block; }
+.email-small-print { font-size:11px; color:rgba(255,255,255,0.35); margin-top:9px; line-height:1.5; }
+
+/* ── ERROR HANDLING ── */
+.error-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:#C0392B; color:var(--white); padding:14px 20px; border-radius:var(--radius); font-size:13px; font-weight:500; z-index:1000; box-shadow:var(--shadow-lg); transition:transform 0.3s cubic-bezier(0.16,1,0.3,1); max-width:90vw; text-align:center; display:flex; align-items:center; gap:10px; }
+.error-toast.show { transform:translateX(-50%) translateY(0); }
+.error-toast-close { background:none; border:none; color:rgba(255,255,255,0.7); cursor:pointer; font-size:16px; padding:0 0 0 4px; flex-shrink:0; }
+
+/* ── FEEDBACK ── */
+.feedback-bar { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:13px 16px; margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:var(--shadow-sm); flex-wrap:wrap; }
+.feedback-bar-text { font-size:13px; color:var(--text-mid); }
+.feedback-btns { display:flex; gap:8px; }
+.feedback-btn { background:var(--cream); border:1.5px solid var(--border); border-radius:8px; padding:8px 16px; font-family:'Inter',sans-serif; font-size:13px; cursor:pointer; transition:all 0.2s; -webkit-tap-highlight-color:transparent; }
+.feedback-btn:hover { border-color:var(--navy); }
+.feedback-btn.thumbs-up:hover { background:#F0F9F4; border-color:var(--green); color:var(--green); }
+.feedback-btn.thumbs-down:hover { background:var(--red-dim); border-color:var(--red); color:var(--red); }
+.feedback-btn.selected-up { background:#F0F9F4; border-color:var(--green); color:var(--green); }
+.feedback-btn.selected-down { background:var(--red-dim); border-color:var(--red); color:var(--red); }
+.feedback-thanks { font-size:13px; color:var(--text-dim); font-style:italic; }
+
+/* ── PRIVACY/TERMS ── */
+#screen-legal { display:none; }
+#screen-legal.active { display:block; }
+.legal-content { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; box-shadow:var(--shadow-sm); }
+.legal-content h2 { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+.legal-content h3 { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:700; color:var(--navy); margin:20px 0 8px; }
+.legal-content p { font-size:13px; color:var(--text-mid); line-height:1.8; margin-bottom:10px; }
+.legal-content ul { font-size:13px; color:var(--text-mid); line-height:1.8; padding-left:20px; margin-bottom:10px; }
+.legal-updated { font-size:12px; color:var(--text-dim); margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+
+footer { text-align: center; padding: 28px 20px; font-size: 11px; color: var(--text-dim); border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN ══ -->
+<!-- ERROR TOAST -->
+<div class="error-toast" id="error-toast">
+  <span id="error-toast-msg">Something went wrong. Please try again.</span>
+  <button class="error-toast-close" onclick="hideError()">✕</button>
+</div>
+
+<div id="screen-setup">
+  <div class="setup-card">
+    <div class="setup-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 130" height="60" style="display:block;margin:0 auto 8px">
+        <defs>
+          <linearGradient id="ng2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#243C72"/><stop offset="100%" style="stop-color:#0F1F3D"/></linearGradient>
+          <linearGradient id="gg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#E8C97A"/><stop offset="100%" style="stop-color:#C9A84C"/></linearGradient>
+        </defs>
+        <rect width="440" height="130" fill="#FAF8F4" rx="16"/>
+        <rect x="12" y="12" width="106" height="106" rx="20" fill="url(#ng2)"/>
+        <ellipse cx="65" cy="74" rx="19" ry="15" fill="url(#gg2)"/>
+        <ellipse cx="44" cy="56" rx="9" ry="11" fill="url(#gg2)"/>
+        <ellipse cx="86" cy="56" rx="9" ry="11" fill="url(#gg2)"/>
+        <ellipse cx="54" cy="46" rx="8" ry="10" fill="url(#gg2)"/>
+        <ellipse cx="76" cy="46" rx="8" ry="10" fill="url(#gg2)"/>
+        <circle cx="97" cy="32" r="15" fill="#C9A84C"/>
+        <text x="97" y="38" text-anchor="middle" font-family="Georgia,serif" font-size="16" font-weight="bold" fill="#0F1F3D">✓</text>
+        <text x="136" y="72" font-family="Georgia,'Times New Roman',serif" font-size="54" font-weight="700" letter-spacing="-1"><tspan fill="#0F1F3D">Pet</tspan><tspan fill="#B8943F" font-style="italic">Score</tspan></text>
+        <line x1="136" y1="84" x2="410" y2="84" stroke="#C9A84C" stroke-width="1" opacity="0.5"/>
+        <text x="136" y="102" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="500" fill="#8896A8" letter-spacing="2.8">PROFESSIONAL PET PRODUCT INTELLIGENCE</text>
+      </svg>
+    </div>
+    <div class="setup-notice">⚠ <strong>Owner setup only.</strong> Customers will never see this — they go straight to the tool.</div>
+    <label class="field-lbl">Gemini API Key</label>
+    <div class="inp-wrap">
+      <input type="password" id="gemini-key" placeholder="AIzaSy..." />
+      <button class="eye-btn" onclick="toggleKey()">👁</button>
+    </div>
+    <p class="setup-help">Get your free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → API Keys → Create API Key. Starts with <strong>AIzaSy</strong></p>
+    <div class="err-msg" id="key-error">Please enter a valid Gemini API key starting with AIzaSy</div>
+    <button class="btn btn-navy" onclick="launchApp()">Launch PetScore →</button>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="main-app" style="display:none">
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a class="nav-brand" onclick="showScreen('welcome')" href="#">
+        <div class="nav-brand-icon"><svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="14" rx="5" ry="4" fill="currentColor" opacity="0.9"/><ellipse cx="7.5" cy="9.5" rx="2" ry="2.5" fill="currentColor"/><ellipse cx="16.5" cy="9.5" rx="2" ry="2.5" fill="currentColor"/><ellipse cx="10" cy="7" rx="1.5" ry="2" fill="currentColor"/><ellipse cx="14" cy="7" rx="1.5" ry="2" fill="currentColor"/></svg></div>
+        <span class="nav-brand-name">Pet<em>Score</em></span>
+      </a>
+      <div class="nav-actions">
+        <button class="nav-btn" id="nav-tool" onclick="showScreen('tool')">Score</button>
+        <button class="nav-btn" id="nav-history" onclick="showScreen('history')">Reports</button>
+        <button class="nav-btn" id="nav-journal" onclick="showScreen('journal')">Journal</button>
+        <button class="nav-btn" id="nav-picks" onclick="showScreen('picks')">This Week</button>
+        <button class="nav-btn" onclick="showSetup()">⚙</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══ WELCOME SCREEN ══ -->
+  <div id="screen-welcome">
+    <div class="page">
+      <div class="pwa-banner" id="pwa-banner" style="display:none">
+        <div class="pwa-banner-left">
+          <div class="pwa-banner-icon">📱</div>
+          <div class="pwa-banner-text"><strong>Add PetScore to your Home Screen</strong>Use it like a proper app — no browser needed</div>
+        </div>
+        <div class="pwa-banner-actions">
+          <button class="pwa-install-btn" onclick="installPWA()">Add to Home Screen</button>
+          <button class="pwa-dismiss-btn" onclick="dismissPWA()">✕</button>
+        </div>
+      </div>
+      <div class="welcome-hero">
+        <div class="welcome-hero-content">
+          <div class="welcome-eyebrow">✦ AI-Powered · UK Based</div>
+          <h1 class="welcome-h1">Match your pet to the<br><em>perfect</em> product.</h1>
+          <p class="welcome-sub">PetScore analyses your pet's specific breed, age, size and health needs to give you an instant compatibility score for any product — so you never waste money on the wrong purchase again.</p>
+          <div class="welcome-btns">
+            <button class="btn btn-gold" style="font-size:14px;padding:14px 24px" onclick="showScreen('tool')">Get Your First Score →</button>
+            <button class="welcome-sample-btn" onclick="showSampleReport()">View Sample Report</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-num">1</div>
+          <div class="how-title">Tell us about your pet</div>
+          <div class="how-body">Enter your pet's breed, age, size and any health conditions. We save your profile so you only do this once.</div>
+        </div>
+        <div class="how-card">
+          <div class="how-num">2</div>
+          <div class="how-title">Choose a product</div>
+          <div class="how-body">Select a product category — food, harness, bed, supplement and more. Optionally name a specific product you're considering.</div>
+        </div>
+        <div class="how-card">
+          <div class="how-num">3</div>
+          <div class="how-title">Get your score</div>
+          <div class="how-body">Receive a detailed compatibility report with a score out of 100, expert analysis, pros and cons, and the best UK products to buy.</div>
+        </div>
+      </div>
+
+      <div class="daily-tips-section" id="daily-tips-section" style="display:none">
+        <div class="daily-tips-header">
+          <div>
+            <div class="daily-tips-title" id="daily-tips-title">Today's Tips for Your Pet</div>
+            <div class="daily-tips-sub" id="daily-tips-sub">Fresh breed-specific advice, updated daily</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="tips-refresh" onclick="refreshDailyTips()" title="Refresh tips">↻ Refresh</button>
+            <div class="daily-tips-badge">Daily</div>
+          </div>
+        </div>
+        <div id="daily-tips-content"></div>
+      </div>
+
+      <div class="testimonials-section">
+        <h2 class="section-heading">What makes PetScore different?</h2>
+        <div class="how-grid" style="margin-bottom:0">
+          <div class="how-card">
+            <div class="how-num" style="background:var(--gold);color:var(--navy)">✦</div>
+            <div class="how-title">Breed-specific intelligence</div>
+            <div class="how-body">PetScore doesn't give generic advice. Every report is tailored to your pet's exact breed, age, size and health conditions — not a one-size-fits-all answer.</div>
+          </div>
+          <div class="how-card">
+            <div class="how-num" style="background:var(--gold);color:var(--navy)">✦</div>
+            <div class="how-title">Honest scoring</div>
+            <div class="how-body">If a product is a poor fit for your pet, we'll tell you. PetScore gives low scores when the match is bad — because your pet's wellbeing matters more than a sale.</div>
+          </div>
+          <div class="how-card">
+            <div class="how-num" style="background:var(--gold);color:var(--navy)">✦</div>
+            <div class="how-title">UK-focused recommendations</div>
+            <div class="how-body">Every product recommendation is sourced from UK retailers. No American products you can't buy, no irrelevant links — just practical advice you can act on today.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="email-capture">
+        <div class="email-capture-inner">
+          <div class="email-capture-title">Stay in the loop</div>
+          <div class="email-capture-sub">Enter your email to receive PetScore updates, new features and pet product news. No spam, ever.</div>
+          <div class="email-capture-form">
+            <input type="email" id="email-input" placeholder="your@email.com" />
+            <button class="btn btn-gold" onclick="saveEmail()">Subscribe Free</button>
+          </div>
+          <div class="email-capture-success" id="email-success">✓ You're in! We'll be in touch soon.</div>
+          <div class="email-small-print">No spam. Unsubscribe any time. We respect your privacy — see our <span style="color:var(--gold-light);cursor:pointer;text-decoration:underline" onclick="showScreen('legal')">Privacy Policy</span>.</div>
+        </div>
+      </div>
+      <div style="text-align:center;padding:12px 0 4px">
+        <button class="btn btn-navy" style="max-width:280px;margin:0 auto" onclick="showScreen('tool')">Start Scoring — It's Free →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TOOL SCREEN ══ -->
+  <div id="screen-tool">
+    <div class="page">
+      <div class="mode-tabs">
+        <div class="mode-tab active" id="tab-single" onclick="setMode('single')">Single Product</div>
+        <div class="mode-tab" id="tab-compare" onclick="setMode('compare')">Compare Two</div>
+      </div>
+
+      <div id="seasonal-banner-wrap"></div>
+      <div class="disclaimer">
+        <p>⚠ <strong>Important:</strong> PetScore provides AI-generated guidance based on general breed knowledge — not verified veterinary data. Always consult a vet before health-related purchases.</p>
+      </div>
+
+      <!-- Saved pet banner -->
+      <div class="saved-pet-banner" id="saved-pet-banner" style="display:none">
+        <div class="saved-pet-info">
+          <div class="saved-pet-dot"></div>
+          <div class="saved-pet-text">Using saved profile: <strong id="saved-pet-name"></strong></div>
+        </div>
+        <div class="saved-pet-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editPetProfile()">Edit</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearPetProfile()">Clear</button>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div id="form-section">
+        <div class="card" id="pet-card">
+          <div class="card-hdr">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="14" rx="5" ry="4" fill="currentColor" opacity="0.9"/><ellipse cx="7.5" cy="9.5" rx="2" ry="2.5" fill="currentColor"/><ellipse cx="16.5" cy="9.5" rx="2" ry="2.5" fill="currentColor"/><ellipse cx="10" cy="7" rx="1.5" ry="2" fill="currentColor"/><ellipse cx="14" cy="7" rx="1.5" ry="2" fill="currentColor"/></svg></div>
+            <div><div class="card-title">Your Pet</div><div class="card-sub">Your details are saved automatically for next time</div></div>
+          </div>
+          <label class="field-lbl" style="margin-bottom:8px">Pet Type</label>
+          <div class="pet-grid">
+            <div class="pet-opt" data-val="Dog" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Dog</span></div>
+            <div class="pet-opt" data-val="Cat" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Cat</span></div>
+            <div class="pet-opt" data-val="Rabbit" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Rabbit</span></div>
+            <div class="pet-opt" data-val="Bird" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Bird</span></div>
+            <div class="pet-opt" data-val="Guinea Pig" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Guinea Pig</span></div>
+            <div class="pet-opt" data-val="Hamster" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Hamster</span></div>
+            <div class="pet-opt" data-val="Tortoise" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Tortoise</span></div>
+            <div class="pet-opt" data-val="Fish" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Fish</span></div>
+            <div class="pet-opt" data-val="Snake" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Snake</span></div>
+            <div class="pet-opt" data-val="Lizard" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Lizard</span></div>
+            <div class="pet-opt" data-val="Horse" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Horse</span></div>
+            <div class="pet-opt" data-val="Ferret" onclick="selectPet(this)"><span class="pet-dot"></span><span class="pet-lbl">Ferret</span></div>
+          </div>
+          <div class="f-row">
+            <div class="f"><label>Breed / Species</label><input type="text" id="breed" placeholder="e.g. Maine Coon, Labrador..." /></div>
+            <div class="f"><label>Pet's Name (optional)</label><input type="text" id="pet-name" placeholder="e.g. Luna" /></div>
+            <div class="f"><label>Age</label><select id="pet-age"><option value="">Select pet type first...</option></select></div>
+            <div class="f"><label>Size / Weight</label><select id="pet-size"><option value="">Select pet type first...</option></select><div class="size-hint" id="size-hint"></div></div>
+            <div class="f"><label>Activity Level</label><select id="activity"><option value="">Select pet type first...</option></select></div>
+            <div class="f"><label>Coat / Fur / Skin</label><select id="coat"><option value="">Select pet type first...</option></select></div>
+          </div>
+          <div class="f"><label>Health conditions / special needs (optional)</label><input type="text" id="health" placeholder="e.g. kidney disease, sensitive skin, arthritis..." /></div>
+        </div>
+
+        <!-- Single -->
+        <div id="single-section" class="card">
+          <div class="card-hdr">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M6 2l1.5 4.5H19l-2 7H7L5 2H2M7 16a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z"/></svg></div>
+            <div><div class="card-title">Product to Score</div><div class="card-sub">Select a category and optionally name the specific product</div></div>
+          </div>
+          <label class="field-lbl" style="margin-bottom:8px">Product Category</label>
+          <div class="prod-grid" id="prod-grid-single"></div>
+          <div class="f-row">
+            <div class="f"><label>Specific Product Name (optional)</label><input type="text" id="product-name" placeholder="e.g. Royal Canin Indoor Adult" /></div>
+            <div class="f"><label>Budget</label>
+              <select id="budget">
+                <option value="">Any budget...</option>
+                <option value="budget under £15">Budget (under £15)</option>
+                <option value="mid-range £15–£50">Mid-range (£15–£50)</option>
+                <option value="premium £50–£100">Premium (£50–£100)</option>
+                <option value="luxury £100+">Luxury (£100+)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compare -->
+        <div id="compare-section" style="display:none">
+          <div class="compare-grid">
+            <div class="compare-card">
+              <div class="compare-lbl"><span>1</span> First Product</div>
+              <label class="field-lbl" style="margin-bottom:7px">Category</label>
+              <div class="prod-grid" id="prod-grid-a" style="margin-bottom:11px"></div>
+              <div class="f"><label>Product Name (optional)</label><input type="text" id="product-name-a" placeholder="e.g. Hills Science Diet" /></div>
+            </div>
+            <div class="compare-card">
+              <div class="compare-lbl"><span>2</span> Second Product</div>
+              <label class="field-lbl" style="margin-bottom:7px">Category</label>
+              <div class="prod-grid" id="prod-grid-b" style="margin-bottom:11px"></div>
+              <div class="f"><label>Product Name (optional)</label><input type="text" id="product-name-b" placeholder="e.g. Royal Canin Indoor" /></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-navy" style="max-width:320px;margin-top:6px" onclick="runAnalysis()">Generate PetScore Report →</button>
+      </div>
+
+      <!-- LOADING -->
+      <div id="loading-overlay">
+        <div class="loader-ring"></div>
+        <div class="loader-title">Analysing compatibility...</div>
+        <div class="loader-sub">Reviewing breed traits and product fit</div>
+        <div class="loader-steps">
+          <div class="loader-step">Analysing breed characteristics</div>
+          <div class="loader-step">Scoring compatibility factors</div>
+          <div class="loader-step">Sourcing UK product recommendations</div>
+          <div class="loader-step">Compiling your full report</div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="results-section">
+        <div id="single-results"></div>
+        <div id="compare-results"></div>
+        <div class="result-actions">
+          <button class="btn btn-outline" onclick="resetForm()">← New Analysis</button>
+          <button class="btn btn-gold" onclick="downloadPDF()">↓ Download PDF Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY SCREEN ══ -->
+  <div id="screen-history">
+    <div class="page">
+      <!-- Score comparison -->
+      <div class="comparison-section" id="comparison-section" style="margin-bottom:20px">
+        <div class="section-title">Top Scored Products</div>
+        <div id="comparison-list"></div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--navy)">All Reports</h2>
+          <p style="font-size:13px;color:var(--text-dim);margin-top:3px">Your saved PetScore compatibility reports</p>
+        </div>
+        <div class="history-actions">
+          <button class="btn btn-ghost btn-sm" onclick="clearAllHistory()">Clear All</button>
+          <button class="btn btn-navy btn-sm" onclick="showScreen('tool')">New Score →</button>
+        </div>
+      </div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+
+  <!-- ══ JOURNAL SCREEN ══ -->
+  <div id="screen-journal">
+    <div class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--navy)">Pet Journal</h2>
+          <p style="font-size:13px;color:var(--text-dim);margin-top:3px">Log products you've tried and build your pet's personal product history</p>
+        </div>
+        <button class="btn btn-navy btn-sm" onclick="toggleJournalForm()">+ Log a Product</button>
+      </div>
+
+      <!-- Add entry form -->
+      <div class="journal-form" id="journal-form" style="display:none">
+        <div class="journal-form-title">Log a Product</div>
+        <div class="f-row">
+          <div class="f"><label>Product Name</label><input type="text" id="j-product" placeholder="e.g. Royal Canin Indoor Adult" /></div>
+          <div class="f"><label>Category</label>
+            <select id="j-category">
+              <option value="">Select category...</option>
+              <option>Harness</option><option>Collar</option><option>Leash / Lead</option>
+              <option>Bed / Sleeping mat</option><option>Dry food / kibble</option><option>Wet food</option>
+              <option>Treats and chews</option><option>Toy</option><option>Shampoo / grooming</option>
+              <option>Supplement / vitamin</option><option>Flea and tick treatment</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-row">
+          <div class="f">
+            <label>Your Rating</label>
+            <div class="star-rating" id="star-rating">
+              <span class="star" data-val="1" onclick="setStars(1)">★</span>
+              <span class="star" data-val="2" onclick="setStars(2)">★</span>
+              <span class="star" data-val="3" onclick="setStars(3)">★</span>
+              <span class="star" data-val="4" onclick="setStars(4)">★</span>
+              <span class="star" data-val="5" onclick="setStars(5)">★</span>
+            </div>
+          </div>
+          <div class="f"><label>PetScore AI Score (optional)</label><input type="number" id="j-ai-score" placeholder="e.g. 87" min="0" max="100" style="-webkit-appearance:none;appearance:none;background:var(--cream);border:1.5px solid var(--border-mid);border-radius:9px;padding:11px 12px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;width:100%;" /></div>
+        </div>
+        <div class="f" style="margin-bottom:12px"><label>Notes (optional)</label><input type="text" id="j-notes" placeholder="e.g. Luna loves this, coat improved after 2 weeks..." /></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-navy" style="flex:1" onclick="saveJournalEntry()">Save Entry</button>
+          <button class="btn btn-outline" onclick="toggleJournalForm()">Cancel</button>
+        </div>
+      </div>
+
+      <div id="journal-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ WEEKLY PICKS SCREEN ══ -->
+  <div id="screen-picks">
+    <div class="page">
+      <div style="margin-bottom:20px">
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--navy)">This Week's Picks</h2>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:3px">AI-selected products scored specifically for your saved pet profile</p>
+      </div>
+      <div id="picks-content"></div>
+    </div>
+  </div>
+
+
+  <!-- ══ LEGAL SCREEN ══ -->
+  <div id="screen-legal">
+    <div class="page">
+      <div style="margin-bottom:16px">
+        <button class="btn btn-ghost btn-sm" onclick="history.back()" style="margin-bottom:12px">← Back</button>
+      </div>
+      <div class="legal-content">
+        <h2>Privacy Policy & Terms of Use</h2>
+        <div class="legal-updated">Last updated: March 2026</div>
+
+        <h3>Who we are</h3>
+        <p>PetScore is an AI-powered pet product compatibility tool operated as an independent UK digital product. By using PetScore, you agree to these terms.</p>
+
+        <h3>What data we collect</h3>
+        <p>PetScore stores the following data locally in your browser only:</p>
+        <ul>
+          <li>Your pet's profile (type, breed, age, size, health conditions)</li>
+          <li>Your report history and journal entries</li>
+          <li>Your API key (stored only in your browser, never sent to our servers)</li>
+        </ul>
+        <p>If you subscribe to our email newsletter, we collect your email address for the sole purpose of sending pet product tips. We do not share your email with third parties.</p>
+
+        <h3>How we use your data</h3>
+        <p>Pet profile data is sent to Google's Gemini AI API to generate compatibility scores. This data is processed according to Google's privacy policy. We do not store your pet data on our servers — it exists only in your browser's local storage.</p>
+
+        <h3>AI-generated content disclaimer</h3>
+        <p>PetScore uses artificial intelligence to generate product compatibility scores and recommendations. These are provided for general guidance only and do not constitute veterinary advice. Always consult a qualified veterinarian before making health-related decisions for your pet.</p>
+        <p>Scores and recommendations are based on general breed knowledge and may not account for your pet's individual circumstances. PetScore accepts no liability for decisions made based on AI-generated content.</p>
+
+        <h3>Subscriptions & payments</h3>
+        <p>PetScore subscriptions are processed securely via Gumroad. We do not store payment details. Subscriptions renew monthly at the stated price. You may cancel at any time via your Gumroad account. Refunds are available within 7 days of purchase in accordance with UK consumer law.</p>
+
+        <h3>Your rights under UK GDPR</h3>
+        <p>You have the right to access, correct or delete any personal data we hold about you. As most data is stored locally in your browser, you can delete it at any time by clearing your browser's local storage. For email data, contact us to request deletion.</p>
+
+        <h3>Cookies</h3>
+        <p>PetScore uses browser local storage (not cookies) to save your preferences and data locally on your device. We do not use tracking cookies or third-party analytics.</p>
+
+        <h3>Changes to this policy</h3>
+        <p>We may update this policy from time to time. Continued use of PetScore after changes constitutes acceptance of the updated policy.</p>
+
+        <h3>Contact</h3>
+        <p>For any privacy-related queries, please contact us via our website.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>PetScore · AI-generated guidance only · Always consult a qualified vet for health-related decisions · Results based on general breed knowledge, not verified veterinary data</footer>
+</div>
+
+<!-- ══ SAMPLE REPORT MODAL ══ -->
+<div class="modal-overlay" id="sample-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Sample Report — Labrador × Dry Food</div>
+      <button class="modal-close" onclick="closeSampleModal()">✕</button>
+    </div>
+    <div style="background:var(--navy);border-radius:var(--radius);padding:20px;margin-bottom:14px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(184,148,63,0.25) 0%,transparent 70%)"></div>
+      <div style="position:relative;z-index:1">
+        <div style="font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-light);margin-bottom:4px;opacity:0.8">PetScore Compatibility</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:700;color:#7DCEA0;line-height:1">87<span style="font-size:18px;opacity:0.45">/100</span></div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:white;margin-bottom:3px">Excellent Match</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.45)">Adult Labrador × Premium Dry Food</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">
+      ${[['Size & Fit','92','Well-suited portion sizes for large breeds'],['Age Suitability','88','Adult formula matches 4-year age range'],['Breed Traits','85','Labradors benefit from controlled-calorie diets'],['Activity Match','90','High-energy formula suits active working breed'],['Health & Safety','82','No known allergen conflicts for this breed'],['Value for Money','86','Good nutritional density for the price point']].map(c=>`<div style="background:var(--cream);border:1px solid var(--border);border-radius:var(--radius);padding:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><div style="font-size:10px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.04em">${c[0]}</div><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--green)">${c[1]}</div></div><div style="height:3px;background:var(--border);border-radius:999px;overflow:hidden"><div style="height:100%;width:${c[1]}%;background:var(--green);border-radius:999px"></div></div><div style="font-size:10px;color:var(--text-dim);margin-top:5px;line-height:1.3">${c[2]}</div></div>`).join('')}
+    </div>
+    <div style="background:var(--cream);border-radius:var(--radius);padding:14px;margin-bottom:12px;font-size:13px;color:var(--text-mid);line-height:1.75">Labradors are a large, highly active breed prone to obesity, making portion-controlled, high-protein dry food an excellent choice. This product's calorie density is appropriate for adult Labradors in moderate-to-high activity households. The protein-to-fat ratio supports lean muscle maintenance without excessive weight gain — a common concern for the breed.</div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1;background:var(--green-dim);border:1px solid rgba(45,122,95,0.15);border-radius:var(--radius);padding:14px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--green);margin-bottom:9px">Why it works</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:5px">${['Controlled calorie formula suits Labrador obesity risk','High protein supports active breed muscle maintenance','Large kibble size encourages slower eating','No common Labrador allergens in ingredients'].map(p=>`<li style="font-size:12px;color:var(--text-mid);display:flex;gap:6px;align-items:flex-start;line-height:1.45"><span style="color:var(--green);font-weight:700;font-size:10px;flex-shrink:0;margin-top:2px">✓</span>${p}</li>`).join('')}</ul>
+      </div>
+      <div style="flex:1;background:var(--red-dim);border:1px solid rgba(192,57,43,0.12);border-radius:var(--radius);padding:14px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--red);margin-bottom:9px">Watch out for</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:5px">${['Monitor portion sizes carefully — Labradors will overeat','Transition slowly over 7–10 days to avoid digestive upset','Check batch numbers if your dog has a sensitive stomach'].map(c=>`<li style="font-size:12px;color:var(--text-mid);display:flex;gap:6px;align-items:flex-start;line-height:1.45"><span style="color:var(--red);font-weight:700;font-size:10px;flex-shrink:0;margin-top:2px">✗</span>${c}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div style="background:#FEF9EC;border:1px solid rgba(183,119,13,0.2);border-radius:9px;padding:10px 13px;font-size:11px;color:var(--amber);margin-bottom:16px">⚠ AI-generated guidance only — not veterinary advice. Always consult your vet for dietary decisions.</div>
+    <button class="btn btn-navy" onclick="closeSampleModal();showScreen('tool')">Try It With Your Pet →</button>
+  </div>
+</div>
+
+<!-- ══ SHARE MODAL ══ -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Share Your PetScore Report</div>
+      <button class="modal-close" onclick="closeShareModal()">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;line-height:1.6">Share a summary of your compatibility report with your vet, a friend, or on social media.</p>
+    <div style="margin-bottom:14px">
+      <label class="field-lbl">Report Summary</label>
+      <div class="share-url-box" id="share-text-box"></div>
+      <button class="btn btn-navy" onclick="copyShareText()" style="margin-top:8px">Copy to Clipboard</button>
+      <div class="copy-success" id="copy-success">✓ Copied to clipboard!</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="shareWhatsApp()">Share via WhatsApp</button>
+      <button class="btn btn-ghost" onclick="closeShareModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ STATE ══
+let apiKey='', selectedPetType='', selectedProductA='', selectedProductB='';
+let currentMode='single', lastResults=null, currentShareText='';
+
+// ══ DATA ══
+const sizeOptions={Dog:[{val:'Toy breed (under 3kg)',hint:'e.g. Chihuahua, Teacup Yorkie'},{val:'Small (3–10kg)',hint:'e.g. Shih Tzu, Pug, Bichon Frise'},{val:'Medium (10–25kg)',hint:'e.g. Spaniel, Whippet, Border Collie'},{val:'Large (25–45kg)',hint:'e.g. Labrador, Golden Retriever, Husky'},{val:'Giant (45kg+)',hint:'e.g. Great Dane, St. Bernard, Mastiff'}],Cat:[{val:'Small (under 3kg)',hint:'e.g. Singapura, Devon Rex'},{val:'Average (3–5kg)',hint:'e.g. Domestic Shorthair, Siamese, Bengal'},{val:'Large (5–7kg)',hint:'e.g. Norwegian Forest, British Shorthair'},{val:'Extra large (7kg+)',hint:'e.g. Maine Coon, Savannah, large Ragdoll'}],Rabbit:[{val:'Dwarf (under 1.5kg)',hint:'e.g. Netherland Dwarf, Mini Rex'},{val:'Small (1.5–3kg)',hint:'e.g. Dutch, Mini Lop'},{val:'Medium (3–5kg)',hint:'e.g. Rex, English Lop'},{val:'Large (5kg+)',hint:'e.g. Flemish Giant, Continental Giant'}],Bird:[{val:'Tiny — finch/canary (under 30g)',hint:'e.g. Zebra Finch, Canary'},{val:'Small — budgie/lovebird (30–60g)',hint:'e.g. Budgerigar, Lovebird'},{val:'Medium — cockatiel/conure (60–200g)',hint:'e.g. Cockatiel, Green Cheek Conure'},{val:'Large — African Grey/Amazon (200–600g)',hint:'e.g. African Grey, Amazon Parrot'},{val:'Extra large — macaw/cockatoo (600g+)',hint:'e.g. Macaw, Cockatoo'}],'Guinea Pig':[{val:'Young (under 600g)',hint:'Under 3 months'},{val:'Adult (600g–1.2kg)',hint:'Average adult'},{val:'Large (1.2kg+)',hint:'e.g. Rex or older boar'}],Hamster:[{val:'Dwarf (under 40g)',hint:'e.g. Roborovski, Winter White'},{val:'Syrian (100–200g)',hint:'e.g. Golden / Teddy Bear'}],Tortoise:[{val:'Hatchling (under 5cm)',hint:'Newly hatched'},{val:'Juvenile (5–15cm)',hint:'1–5 years'},{val:'Adult small species (15–25cm)',hint:"e.g. Hermann's, Horsfield's"},{val:'Adult large species (25cm+)',hint:'e.g. Sulcata, Leopard Tortoise'}],Fish:[{val:'Nano (under 3cm)',hint:'e.g. Neon Tetra, Chili Rasbora'},{val:'Small (3–8cm)',hint:'e.g. Guppy, Platy, Betta'},{val:'Medium (8–20cm)',hint:'e.g. Angelfish, Cichlid, Goldfish'},{val:'Large (20cm+)',hint:'e.g. Oscar, Koi, large Catfish'}],Snake:[{val:'Small (under 60cm)',hint:'e.g. Corn Snake juvenile, Hognose'},{val:'Medium (60cm–1.5m)',hint:'e.g. Adult Corn Snake, Milk Snake'},{val:'Large (1.5–3m)',hint:'e.g. Ball Python, King Snake'},{val:'Extra large (3m+)',hint:'e.g. Boa Constrictor, Burmese Python'}],Lizard:[{val:'Tiny (under 15cm)',hint:'e.g. Day Gecko, small Skink'},{val:'Small (15–30cm)',hint:'e.g. Leopard Gecko, Crested Gecko'},{val:'Medium (30–60cm)',hint:'e.g. Bearded Dragon, Blue Tongue Skink'},{val:'Large (60cm+)',hint:'e.g. Monitor, Iguana'}],Horse:[{val:'Miniature/pony (under 12hh)',hint:'e.g. Shetland, Miniature horse'},{val:'Small pony (12–14.2hh)',hint:'e.g. Welsh Pony, New Forest'},{val:'Cob/small horse (14.2–16hh)',hint:'e.g. Cob, Quarter Horse'},{val:'Large horse (16hh+)',hint:'e.g. Thoroughbred, Warmblood, Shire'}],Ferret:[{val:'Jill / small (under 600g)',hint:'Typically female ferrets'},{val:'Hob / large (600g–2kg)',hint:'Typically male ferrets'}]};
+const ageOptions={Dog:['Puppy (0–6 months)','Junior (6–12 months)','Young adult (1–3 years)','Adult (3–7 years)','Mature (7–10 years)','Senior (10+ years)'],Cat:['Kitten (0–6 months)','Junior (6–12 months)','Young adult (1–3 years)','Adult (3–10 years)','Mature (10–15 years)','Senior (15+ years)'],Rabbit:['Baby (0–3 months)','Junior (3–6 months)','Young adult (6mo–1yr)','Adult (1–5 years)','Senior (5+ years)'],Bird:['Chick / fledgling','Juvenile','Young adult (1–3 years)','Adult (3–10 years)','Senior (10+ years)'],'Guinea Pig':['Baby (0–3 months)','Young (3–12 months)','Adult (1–4 years)','Senior (4+ years)'],Hamster:['Young (0–6 months)','Adult (6mo–1.5yrs)','Senior (1.5–3 years)'],Tortoise:['Hatchling (0–1 year)','Juvenile (1–5 years)','Sub-adult (5–10 years)','Adult (10+ years)'],Fish:['Fry / juvenile','Young adult','Adult','Mature / aged'],Snake:['Hatchling (0–6 months)','Juvenile (6–18 months)','Sub-adult (1–3 years)','Adult (3+ years)'],Lizard:['Hatchling (0–6 months)','Juvenile (6–18 months)','Sub-adult (1–3 years)','Adult (3+ years)'],Horse:['Foal (0–1 year)','Yearling (1–2 years)','Young (2–5 years)','Adult (5–15 years)','Senior (15+ years)'],Ferret:['Kit (0–6 months)','Young adult (6mo–2yrs)','Adult (2–4 years)','Senior (4+ years)']};
+const activityOptions={Dog:['Very low energy — mostly sleeps','Low energy — short walks only','Moderate — daily walks','High energy — very active','Working/sporting breed — extreme energy'],Cat:['Indoor only — very sedentary','Indoor — occasionally playful','Indoor/outdoor — moderately active','Very playful and active','Outdoor / highly active'],Rabbit:['Calm and relaxed','Moderately active','Very active and energetic'],Bird:['Calm / quiet','Moderately active','Very active and vocal','Highly active — needs lots of stimulation'],default:['Low energy','Moderate energy','High energy']};
+const coatOptions={Dog:['Hairless / no coat','Short smooth coat','Short dense coat','Medium length coat','Long flowing coat','Thick double coat','Curly or wavy coat','Wiry coat'],Cat:['Hairless (e.g. Sphynx)','Short coat','Medium coat','Long coat','Thick double coat','Curly coat (e.g. Rex)'],Rabbit:['Short coat','Medium coat','Long coat (e.g. Angora)','Rex (velvety short)'],Bird:['Normal feathers','Crested','Heavily feathered legs'],default:['Short coat / scales / feathers','Medium coat','Long coat','Hairless / no fur']};
+const products=['Harness','Collar','Leash / Lead','Bed / Sleeping mat','Dry food / kibble','Wet food','Treats and chews','Toy','Shampoo / grooming','Brush / grooming tool','Crate / carrier','Supplement / vitamin','Litter box','Cat tree / climbing structure','Water / food bowl','Flea and tick treatment','Clothing / jacket','Training tool','Tank / habitat / enclosure','Smart pet tech device'];
+
+// ══ BUILD PRODUCT GRIDS ══
+function buildProdGrid(id, selFn) {
+  document.getElementById(id).innerHTML = products.map(p=>`<div class="prod-opt" data-val="${p}" onclick="${selFn}(this)"><span class="prod-dot"></span><span class="prod-lbl">${p}</span></div>`).join('');
+}
+buildProdGrid('prod-grid-single','selProdSingle');
+buildProdGrid('prod-grid-a','selProdA');
+buildProdGrid('prod-grid-b','selProdB');
+function selProdSingle(el){document.querySelectorAll('#prod-grid-single .prod-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selectedProductA=el.dataset.val;}
+function selProdA(el){document.querySelectorAll('#prod-grid-a .prod-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selectedProductA=el.dataset.val;}
+function selProdB(el){document.querySelectorAll('#prod-grid-b .prod-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selectedProductB=el.dataset.val;}
+
+// ══ SCREENS ══
+// showScreen defined below
+
+// ══ SETUP ══
+function toggleKey(){const i=document.getElementById('gemini-key');i.type=i.type==='password'?'text':'password';}
+function launchApp(){
+  const key=document.getElementById('gemini-key').value.trim();
+  const err=document.getElementById('key-error');
+  if(!key.startsWith('AIzaSy')){err.classList.add('show');return;}
+  err.classList.remove('show');
+  apiKey=key;
+  try{localStorage.setItem('ps_key',key);}catch(e){}
+  document.getElementById('screen-setup').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  showScreen('welcome');
+}
+function showSetup(){
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('screen-setup').style.display='flex';
+  document.getElementById('gemini-key').value=apiKey;
+}
+
+// ══ AUTO LOAD ══
+(function(){
+  try{
+    // API key is now handled server-side via Vercel function
+    apiKey='server-side';
+    document.getElementById('screen-setup').style.display='none';
+    document.getElementById('main-app').style.display='block';
+    showScreen('welcome');
+  }catch(e){document.getElementById('screen-setup').style.display='flex';}
+})();
+
+// ══ PET PROFILE SAVE/LOAD ══
+function savePetProfile(){
+  const profile={type:selectedPetType,breed:document.getElementById('breed').value.trim(),name:document.getElementById('pet-name').value.trim(),age:document.getElementById('pet-age').value,size:document.getElementById('pet-size').value,activity:document.getElementById('activity').value,coat:document.getElementById('coat').value,health:document.getElementById('health').value.trim()};
+  try{localStorage.setItem('ps_pet',JSON.stringify(profile));}catch(e){}
+}
+function loadSavedPetProfile(){
+  try{
+    const p=JSON.parse(localStorage.getItem('ps_pet'));
+    if(!p||!p.type) return;
+    const banner=document.getElementById('saved-pet-banner');
+    const nameEl=document.getElementById('saved-pet-name');
+    nameEl.textContent=p.name?`${p.name} the ${p.breed} (${p.type})`:`${p.breed} ${p.type}`;
+    banner.style.display='flex';
+    // Pre-fill
+    const opt=document.querySelector(`.pet-opt[data-val="${p.type}"]`);
+    if(opt){selectPet(opt);}
+    setTimeout(()=>{
+      if(p.breed)document.getElementById('breed').value=p.breed;
+      if(p.name)document.getElementById('pet-name').value=p.name;
+      if(p.age)document.getElementById('pet-age').value=p.age;
+      if(p.size)document.getElementById('pet-size').value=p.size;
+      if(p.activity)document.getElementById('activity').value=p.activity;
+      if(p.coat)document.getElementById('coat').value=p.coat;
+      if(p.health)document.getElementById('health').value=p.health;
+    },100);
+  }catch(e){}
+}
+function editPetProfile(){document.getElementById('pet-card').scrollIntoView({behavior:'smooth'});}
+function clearPetProfile(){try{localStorage.removeItem('ps_pet');}catch(e){}document.getElementById('saved-pet-banner').style.display='none';}
+
+// ══ DYNAMIC DROPDOWNS ══
+function updateDynamicFields(petType){
+  const sEl=document.getElementById('pet-size'),hEl=document.getElementById('size-hint');
+  sEl.innerHTML='<option value="">Select size...</option>';
+  (sizeOptions[petType]||[]).forEach(s=>{const o=document.createElement('option');o.value=s.val;o.textContent=s.val;sEl.appendChild(o);});
+  sEl.onchange=()=>{const s=(sizeOptions[petType]||[]).find(x=>x.val===sEl.value);hEl.textContent=s?s.hint:'';};
+  const aEl=document.getElementById('pet-age');
+  aEl.innerHTML='<option value="">Select age...</option>';
+  (ageOptions[petType]||ageOptions.Dog).forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;aEl.appendChild(o);});
+  const acEl=document.getElementById('activity');
+  acEl.innerHTML='<option value="">Select level...</option>';
+  (activityOptions[petType]||activityOptions.default).forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;acEl.appendChild(o);});
+  const cEl=document.getElementById('coat');
+  cEl.innerHTML='<option value="">Select type...</option>';
+  (coatOptions[petType]||coatOptions.default).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cEl.appendChild(o);});
+}
+function selectPet(el){
+  document.querySelectorAll('.pet-opt').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedPetType=el.dataset.val;
+  updateDynamicFields(selectedPetType);
+}
+
+// ══ MODE ══
+function setMode(m){
+  currentMode=m;
+  document.getElementById('tab-single').classList.toggle('active',m==='single');
+  document.getElementById('tab-compare').classList.toggle('active',m==='compare');
+  document.getElementById('single-section').style.display=m==='single'?'block':'none';
+  document.getElementById('compare-section').style.display=m==='compare'?'block':'none';
+}
+
+function scoreColour(s){return s>=80?'#2D7A5F':s>=60?'#B7770D':'#C0392B';}
+function scoreColourLight(s){return s>=80?'#7DCEA0':s>=60?'#F4D03F':'#F1948A';}
+
+// ══ PROMPT ══
+function buildPrompt(pet,product){
+  return `You are PetScore, a professional pet product compatibility analyst based in the UK. Be specific, accurate and honest. Flag all safety concerns clearly.
+PET: Type: ${pet.type}, Breed: ${pet.breed}, Name: ${pet.name||'Not given'}, Age: ${pet.age}, Size: ${pet.size}, Activity: ${pet.activity||'Not specified'}, Coat: ${pet.coat||'Not specified'}, Health/needs: ${pet.health||'None'}
+PRODUCT: Category: ${product.category}, Specific product: ${product.name||'Not specified'}, Budget: ${product.budget||'Any'}
+Rules: 1) Base breed analysis on real known characteristics only. 2) Flag any safety/health concerns clearly. 3) Only recommend real UK-available products. 4) Be honest — give low scores when fit is poor. 5) Use British English throughout.
+Respond ONLY with valid JSON, no markdown:
+{"overallScore":<0-100>,"verdict":"<3-5 words>","scoreColour":"<green/amber/red>","petSummary":"<Breed x Product>","safetyFlag":<true/false>,"safetyNote":"<one sentence if true, else empty>","categories":[{"name":"Size & Fit","score":<0-100>,"note":"<one line>"},{"name":"Age Suitability","score":<0-100>,"note":"<one line>"},{"name":"Breed Traits","score":<0-100>,"note":"<one line>"},{"name":"Activity Match","score":<0-100>,"note":"<one line>"},{"name":"Health & Safety","score":<0-100>,"note":"<one line>"},{"name":"Value for Money","score":<0-100>,"note":"<one line>"}],"insights":[{"title":"<2-3 words>","value":"<1-2 sentences>"},{"title":"<2-3 words>","value":"<1-2 sentences>"},{"title":"<2-3 words>","value":"<1-2 sentences>"}],"analysis":"<4-5 sentences specific to this breed and product. Use British English.>","pros":["<pro 1>","<pro 2>","<pro 3>","<pro 4>"],"cons":["<con 1>","<con 2>","<con 3>"],"recommendation":"<3-4 sentences of specific actionable advice in British English>","products":[{"name":"<real UK product>","why":"<breed-specific reason>","matchScore":<85-98>,"searchQuery":"<product name Amazon UK>"},{"name":"<second>","why":"<reason>","matchScore":<78-94>,"searchQuery":"<product + Amazon UK>"},{"name":"<third>","why":"<reason>","matchScore":<72-90>,"searchQuery":"<product + Amazon UK>"}]}`;
+}
+
+async function callGemini(prompt){
+  const r=await fetch(`/api/gemini`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'API error — please check your key in Settings');}
+  const d=await r.json();
+  const raw=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+// ══ RUN ANALYSIS ══
+async function runAnalysis(){
+  const breed=document.getElementById('breed').value.trim();
+  const age=document.getElementById('pet-age').value;
+  const size=document.getElementById('pet-size').value;
+  if(!selectedPetType||!breed||!age||!size){showError('Please fill in: pet type, breed, age and size.');return;}
+  if(currentMode==='single'&&!selectedProductA){showError('Please select a product category.');return;}
+  if(currentMode==='compare'&&(!selectedProductA||!selectedProductB)){showError('Please select both product categories to compare.');return;}
+
+  savePetProfile();
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('loading-overlay').classList.add('active');
+  document.getElementById('results-section').classList.remove('active');
+
+  const pet={type:selectedPetType,breed,name:document.getElementById('pet-name').value.trim(),age,size,activity:document.getElementById('activity').value,coat:document.getElementById('coat').value,health:document.getElementById('health').value.trim()};
+
+  try{
+    if(currentMode==='single'){
+      const prod={category:selectedProductA,name:document.getElementById('product-name').value.trim(),budget:document.getElementById('budget').value};
+      const r=await callGemini(buildPrompt(pet,prod));
+      lastResults={mode:'single',data:r,pet,product:prod,date:new Date().toISOString()};
+      saveToHistory(lastResults);
+      document.getElementById('loading-overlay').classList.remove('active');
+      renderSingle(r,pet,prod);
+    } else {
+      const pA={category:selectedProductA,name:document.getElementById('product-name-a').value.trim()};
+      const pB={category:selectedProductB,name:document.getElementById('product-name-b').value.trim()};
+      const [rA,rB]=await Promise.all([callGemini(buildPrompt(pet,pA)),callGemini(buildPrompt(pet,pB))]);
+      lastResults={mode:'compare',dataA:rA,dataB:rB,pet,prodA:pA,prodB:pB,date:new Date().toISOString()};
+      saveToHistory(lastResults);
+      document.getElementById('loading-overlay').classList.remove('active');
+      renderCompare(rA,rB,pA,pB);
+    }
+  }catch(e){
+    document.getElementById('loading-overlay').classList.remove('active');
+    document.getElementById('form-section').style.display='block';
+    showError(e.message || 'Something went wrong. Please check your API key in Settings (⚙).');
+    console.error(e);
+  }
+}
+
+// ══ RENDER SINGLE ══
+function renderSingle(r,pet,prod){
+  const col=scoreColour(r.overallScore);
+  const colLight=scoreColourLight(r.overallScore);
+  const petLabel=pet.name?`${pet.name} the ${pet.breed}`:`${pet.breed} ${pet.type}`;
+
+  let html=`<div class="score-hdr"><div class="score-hdr-inner">
+    <div class="score-hdr-top">
+      <div>
+        <div class="score-eyebrow">PetScore Compatibility Report</div>
+        <div style="display:flex;align-items:flex-end;gap:3px;margin-bottom:5px"><div class="score-num" style="color:${colLight}">${r.overallScore}<span class="score-denom">/100</span></div></div>
+        <div class="score-verdict">${r.verdict}</div>
+        <div class="score-summary-text">${r.petSummary}</div>
+      </div>
+      <div class="score-ring">
+        <svg width="84" height="84" viewBox="0 0 84 84"><circle class="ring-bg" cx="42" cy="42" r="33"/><circle class="ring-fill" id="ring-fill" cx="42" cy="42" r="33" stroke="${colLight}"/></svg>
+        <div class="ring-txt"><span class="ring-pct">${r.overallScore}</span><span class="ring-lbl">Score</span></div>
+      </div>
+    </div>
+    <div class="score-bar-row">
+      <div class="score-bar-labels"><span>Poor Fit</span><span>Excellent Match</span></div>
+      <div class="score-bar-track"><div class="score-bar-fill" id="score-bar-fill"></div></div>
+    </div>
+  </div></div>`;
+
+  // Share bar
+  const shareText=`🐾 PetScore Report\n${r.petSummary}\nCompatibility Score: ${r.overallScore}/100 — ${r.verdict}\n\n${r.analysis.substring(0,200)}...\n\nGenerated by PetScore`;
+  currentShareText=shareText;
+  html+=`<div class="share-bar"><div class="share-bar-text">Report for <strong>${petLabel}</strong></div><div class="share-bar-actions"><button class="btn btn-ghost btn-sm" onclick="openShareModal()">Share Results</button></div></div>`;
+
+  if(r.safetyFlag&&r.safetyNote){
+    html+=`<div class="result-disc" style="background:rgba(192,57,43,0.07);border-color:rgba(192,57,43,0.2)"><p style="color:#C0392B">⚠ <strong>Safety Notice:</strong> ${r.safetyNote} Always consult a vet before purchasing health-related products.</p></div>`;
+  } else {
+    html+=`<div class="result-disc"><p>⚠ <strong>AI Guidance Only.</strong> Results based on general breed knowledge — not verified veterinary data. Consult a vet for health-related decisions.</p></div>`;
+  }
+
+  html+=`<div class="section"><div class="section-title">Compatibility Breakdown</div><div class="cats-grid">${r.categories.map(c=>{const cc=scoreColour(c.score);return`<div class="cat-card"><div class="cat-top"><div class="cat-name">${c.name}</div><div class="cat-score" style="color:${cc}">${c.score}</div></div><div class="cat-track"><div class="cat-bar" style="background:${cc}" data-w="${c.score}"></div></div><div class="cat-note">${c.note}</div></div>`;}).join('')}</div></div>`;
+  html+=`<div class="section"><div class="section-title">Key Insights</div><div class="insights-grid">${r.insights.map(i=>`<div class="insight"><div class="insight-title">${i.title}</div><div class="insight-val">${i.value}</div></div>`).join('')}</div></div>`;
+  html+=`<div class="section"><div class="section-title">Full Compatibility Analysis</div><div class="body-text">${r.analysis}</div></div>`;
+  html+=`<div class="pc-grid"><div class="pc-box pros"><div class="pc-title">Why it works</div><ul class="pc-list">${r.pros.map(p=>`<li>${p}</li>`).join('')}</ul></div><div class="pc-box cons"><div class="pc-title">Watch out for</div><ul class="pc-list">${r.cons.map(c=>`<li>${c}</li>`).join('')}</ul></div></div>`;
+  html+=`<div class="section"><div class="section-title">Expert Recommendation</div><div class="body-text" style="margin-bottom:14px">${r.recommendation}</div><div class="rec-list">${r.products.map((p,i)=>`<a class="rec-item" href="https://www.google.com/search?q=${encodeURIComponent(p.searchQuery)}" target="_blank" rel="noopener"><div class="rec-left"><div class="rec-rank">${i+1}</div><div><div class="rec-name">${p.name}</div><div class="rec-why">${p.why}</div></div></div><div class="rec-right"><div class="rec-badge">${p.matchScore}%</div><div class="rec-link">Find It →</div></div></a>`).join('')}</div></div>`;
+
+  document.getElementById('single-results').innerHTML=html;
+  document.getElementById('compare-results').innerHTML='';
+  document.getElementById('results-section').classList.add('active');
+  requestAnimationFrame(()=>setTimeout(()=>{
+    const circ=2*Math.PI*33;
+    const rf=document.getElementById('ring-fill');
+    if(rf)rf.style.strokeDashoffset=circ-(r.overallScore/100)*circ;
+    const bf=document.getElementById('score-bar-fill');
+    if(bf)bf.style.width=r.overallScore+'%';
+    document.querySelectorAll('.cat-bar').forEach(b=>b.style.width=b.dataset.w+'%');
+  },100));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══ RENDER COMPARE ══
+function renderCompare(rA,rB,pA,pB){
+  const winA=rA.overallScore>=rB.overallScore;
+  let html=`<div class="compare-scores">`;
+  [rA,rB].forEach((r,i)=>{
+    const isW=(i===0&&winA)||(i===1&&!winA);
+    const cl=scoreColourLight(r.overallScore);
+    const prod=i===0?pA:pB;
+    html+=`<div class="compare-score-card"><div class="compare-score-inner">${isW?'<div class="winner-badge">Best Match</div>':''}<div class="compare-lbl2">Product ${i+1} — ${prod.category}</div><div class="compare-score-big" style="color:${cl}">${r.overallScore}</div><div class="compare-verdict">${r.verdict}</div><div class="compare-prod-name">${prod.name||prod.category}</div></div></div>`;
+  });
+  html+=`</div>`;
+
+  html+=`<div class="section"><div class="section-title">Side-by-Side Breakdown</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+  <thead><tr><th style="text-align:left;padding:9px 11px;color:var(--text-dim);font-size:10px;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border);font-weight:600">Category</th><th style="padding:9px 11px;text-align:center;border-bottom:1px solid var(--border);color:var(--navy);font-size:12px;font-weight:600">${pA.name||pA.category}</th><th style="padding:9px 11px;text-align:center;border-bottom:1px solid var(--border);color:var(--navy);font-size:12px;font-weight:600">${pB.name||pB.category}</th></tr></thead><tbody>
+  ${rA.categories.map((c,i)=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 11px;color:var(--text-mid);font-weight:500;font-size:13px">${c.name}</td><td style="padding:9px 11px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:${scoreColour(c.score)}">${c.score}</td><td style="padding:9px 11px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:${scoreColour(rB.categories[i].score)}">${rB.categories[i].score}</td></tr>`).join('')}
+  <tr style="background:var(--cream)"><td style="padding:9px 11px;font-weight:700;color:var(--navy);font-size:13px">Overall Score</td><td style="padding:9px 11px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:${scoreColour(rA.overallScore)}">${rA.overallScore}</td><td style="padding:9px 11px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:${scoreColour(rB.overallScore)}">${rB.overallScore}</td></tr>
+  </tbody></table></div></div>`;
+
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:11px">`;
+  [rA,rB].forEach((r,i)=>{html+=`<div class="section"><div class="section-title">Product ${i+1} Analysis</div><div class="body-text" style="font-size:13px">${r.analysis}</div></div>`;});
+  html+=`</div>`;
+
+  const winner=winA?rA:rB;
+  html+=`<div class="section"><div class="section-title">Verdict & Recommendation</div><div class="body-text">${winner.recommendation}</div></div>`;
+
+  document.getElementById('compare-results').innerHTML=html;
+  document.getElementById('single-results').innerHTML='';
+  document.getElementById('results-section').classList.add('active');
+  requestAnimationFrame(()=>setTimeout(()=>{document.querySelectorAll('.cat-bar').forEach(b=>b.style.width=b.dataset.w+'%');},100));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══ HISTORY ══
+function saveToHistory(result){
+  try{
+    const history=JSON.parse(localStorage.getItem('ps_history')||'[]');
+    history.unshift({id:Date.now(),...result});
+    if(history.length>50)history.pop();
+    localStorage.setItem('ps_history',JSON.stringify(history));
+  }catch(e){}
+}
+
+function renderHistory(){
+  const listEl=document.getElementById('history-list');
+  try{
+    const history=JSON.parse(localStorage.getItem('ps_history')||'[]');
+    if(!history.length){
+      listEl.innerHTML=`<div class="history-empty"><div class="history-empty-icon">📋</div><div class="history-empty-title">No reports yet</div><div class="history-empty-sub">Your PetScore reports will appear here after your first analysis.</div><button class="btn btn-navy" style="max-width:200px;margin:0 auto" onclick="showScreen('tool')">Score Your First Product →</button></div>`;
+      return;
+    }
+    listEl.innerHTML=history.map(item=>{
+      const score=item.mode==='single'?item.data?.overallScore:`${item.dataA?.overallScore} vs ${item.dataB?.overallScore}`;
+      const verdict=item.mode==='single'?item.data?.verdict:'Comparison';
+      const title=item.mode==='single'?item.data?.petSummary:`${item.prodA?.category} vs ${item.prodB?.category}`;
+      const petName=item.pet?.name?`${item.pet.name} the ${item.pet.breed}`:`${item.pet?.breed} ${item.pet?.type}`;
+      const date=new Date(item.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      const singleScore=item.mode==='single'?item.data?.overallScore:null;
+      const bgCol=singleScore?scoreColour(singleScore):'var(--navy)';
+      return`<div class="history-item" onclick="loadHistoryItem(${item.id})">
+        <div class="history-left">
+          <div class="history-score-badge" style="background:${bgCol}"><div class="history-score-num">${item.mode==='single'?score:'⇌'}</div></div>
+          <div><div class="history-title">${title}</div><div class="history-meta">${petName} · ${date}</div></div>
+        </div>
+        <div class="history-right">
+          <div class="history-verdict">${verdict}</div>
+          <div class="history-arrow">›</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){listEl.innerHTML='<p style="color:var(--text-dim);font-size:13px;text-align:center;padding:40px">Unable to load history.</p>';}
+}
+
+function loadHistoryItem(id){
+  try{
+    const history=JSON.parse(localStorage.getItem('ps_history')||'[]');
+    const item=history.find(h=>h.id===id);
+    if(!item)return;
+    lastResults=item;
+    showScreen('tool');
+    document.getElementById('form-section').style.display='none';
+    document.getElementById('loading-overlay').classList.remove('active');
+    if(item.mode==='single'){renderSingle(item.data,item.pet,item.product);}
+    else{renderCompare(item.dataA,item.dataB,item.prodA,item.prodB);}
+  }catch(e){}
+}
+
+function clearAllHistory(){
+  if(!confirm('Clear all report history? This cannot be undone.'))return;
+  try{localStorage.removeItem('ps_history');}catch(e){}
+  renderHistory();
+}
+
+// ══ SHARE ══
+function openShareModal(){
+  document.getElementById('share-text-box').textContent=currentShareText;
+  document.getElementById('share-modal').classList.add('active');
+  document.getElementById('copy-success').classList.remove('show');
+}
+function closeShareModal(){document.getElementById('share-modal').classList.remove('active');}
+function copyShareText(){
+  navigator.clipboard.writeText(currentShareText).then(()=>{
+    document.getElementById('copy-success').classList.add('show');
+    setTimeout(()=>document.getElementById('copy-success').classList.remove('show'),2500);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=currentShareText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    document.getElementById('copy-success').classList.add('show');
+    setTimeout(()=>document.getElementById('copy-success').classList.remove('show'),2500);
+  });
+}
+function shareWhatsApp(){window.open(`https://wa.me/?text=${encodeURIComponent(currentShareText)}`);}
+
+// ══ SAMPLE REPORT ══
+function showSampleReport(){document.getElementById('sample-modal').classList.add('active');}
+function closeSampleModal(){document.getElementById('sample-modal').classList.remove('active');}
+
+// ══ RESET ══
+function resetForm(){
+  document.getElementById('results-section').classList.remove('active');
+  document.getElementById('single-results').innerHTML='';
+  document.getElementById('compare-results').innerHTML='';
+  document.getElementById('form-section').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══ PDF ══
+function downloadPDF(){
+  if(!lastResults){showError('No results to download yet. Please run a score first.');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const navy=[15,31,61],gold=[184,148,63],grey=[74,85,104],green=[45,122,95],red=[192,57,43],amber=[183,119,13];
+
+  doc.setFillColor(...navy);doc.rect(0,0,210,38,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(20);doc.setFont('helvetica','bold');doc.text('PetScore',14,16);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(212,175,106);doc.text('Professional Pet Product Compatibility Report',14,25);
+  doc.setTextColor(120,140,170);doc.text(`Generated: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`,14,32);
+
+  let y=48;
+  if(lastResults.mode==='single'){
+    const r=lastResults.data;
+    const col=r.overallScore>=80?green:r.overallScore>=60?amber:red;
+    doc.setFillColor(245,247,250);doc.roundedRect(14,y,182,30,3,3,'F');
+    doc.setTextColor(...col);doc.setFontSize(28);doc.setFont('helvetica','bold');doc.text(`${r.overallScore}`,18,y+18);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...grey);doc.text('/100',18+doc.getTextWidth(`${r.overallScore}`)+2,y+18);
+    doc.setFontSize(13);doc.setFont('helvetica','italic');doc.setTextColor(...navy);doc.text(r.verdict,55,y+14);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...grey);doc.text(r.petSummary,55,y+22);
+    y+=38;
+
+    doc.setFillColor(254,249,236);doc.roundedRect(14,y,182,11,2,2,'F');
+    doc.setFontSize(8);doc.setTextColor(...amber);doc.text('⚠ AI-generated guidance only. Not veterinary advice. Always consult a vet for health-related decisions.',17,y+7.5);
+    y+=18;
+
+    doc.setTextColor(...navy);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Compatibility Breakdown',14,y);y+=7;
+    r.categories.forEach((c,i)=>{
+      const x=i%2===0?14:105;if(i%2===0&&i>0)y+=14;
+      const cc=c.score>=80?green:c.score>=60?amber:red;
+      doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...grey);doc.text(c.name.toUpperCase(),x,y);
+      doc.setFont('helvetica','bold');doc.setTextColor(...cc);doc.text(`${c.score}`,x+72,y);
+      doc.setFillColor(...cc);doc.rect(x,y+2,c.score*0.7,2,'F');
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...grey);
+      const nl=doc.splitTextToSize(c.note,68);doc.text(nl[0]||'',x,y+7);
+    });
+    y+=22;
+
+    if(y>240){doc.addPage();y=20;}
+    doc.setTextColor(...navy);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Full Analysis',14,y);y+=7;
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...grey);
+    const al=doc.splitTextToSize(r.analysis,182);doc.text(al,14,y);y+=al.length*5+8;
+
+    if(y>240){doc.addPage();y=20;}
+    doc.setTextColor(...navy);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Strengths & Considerations',14,y);y+=7;
+    r.pros.forEach(p=>{if(y>270){doc.addPage();y=20;}doc.setTextColor(...green);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('✓',14,y);doc.setFont('helvetica','normal');doc.setTextColor(...grey);const l=doc.splitTextToSize(p,166);doc.text(l,21,y);y+=l.length*5+2;});
+    r.cons.forEach(c=>{if(y>270){doc.addPage();y=20;}doc.setTextColor(...red);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('✗',14,y);doc.setFont('helvetica','normal');doc.setTextColor(...grey);const l=doc.splitTextToSize(c,166);doc.text(l,21,y);y+=l.length*5+2;});
+    y+=4;
+
+    if(y>240){doc.addPage();y=20;}
+    doc.setTextColor(...navy);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Expert Recommendation',14,y);y+=7;
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...grey);
+    const rl=doc.splitTextToSize(r.recommendation,182);doc.text(rl,14,y);y+=rl.length*5+8;
+
+    if(y>230){doc.addPage();y=20;}
+    doc.setTextColor(...navy);doc.setFontSize(11);doc.setFont('helvetica','bold');doc.text('Recommended Products',14,y);y+=7;
+    r.products.forEach((p,i)=>{
+      if(y>265){doc.addPage();y=20;}
+      doc.setFillColor(245,247,250);doc.roundedRect(14,y,182,13,2,2,'F');
+      doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...navy);doc.text(`#${i+1} ${p.name}`,17,y+5.5);
+      const wl=doc.splitTextToSize(p.why,130);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...grey);doc.text(wl[0]||'',17,y+10);
+      doc.setFont('helvetica','bold');doc.setTextColor(...gold);doc.text(`${p.matchScore}%`,190,y+8,{align:'right'});
+      y+=16;
+    });
+  }
+
+  const pc=doc.getNumberOfPages();
+  for(let i=1;i<=pc;i++){
+    doc.setPage(i);
+    doc.setFillColor(...navy);doc.rect(0,285,210,12,'F');
+    doc.setFontSize(7);doc.setTextColor(120,140,170);
+    doc.text('PetScore · AI-generated guidance only · Not veterinary advice · Always consult a qualified vet',14,293);
+    doc.text(`Page ${i} of ${pc}`,196,293,{align:'right'});
+  }
+
+  const nm=lastResults.pet?.name||lastResults.pet?.breed||'report';
+  doc.save(`PetScore_${nm.replace(/\s+/g,'_')}.pdf`);
+}
+
+// ══ PWA ══
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  try {
+    if (!localStorage.getItem('pwa_dismissed')) {
+      document.getElementById('pwa-banner').style.display = 'flex';
+    }
+  } catch(e) {}
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('pwa-banner').style.display = 'none';
+    });
+  } else {
+    // iOS instructions
+    alert('To add PetScore to your Home Screen:\n\n1. Tap the Share button (box with arrow) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"\n\nPetScore will appear on your Home Screen like a proper app!');
+  }
+}
+
+function dismissPWA() {
+  document.getElementById('pwa-banner').style.display = 'none';
+  try { localStorage.setItem('pwa_dismissed', '1'); } catch(e) {}
+}
+
+// ══ SEASONAL REMINDER ══
+function getSeasonalReminder(petType, breed) {
+  const month = new Date().getMonth();
+  const season = month >= 2 && month <= 4 ? 'spring' : month >= 5 && month <= 7 ? 'summer' : month >= 8 && month <= 10 ? 'autumn' : 'winter';
+  const petLower = (petType || '').toLowerCase();
+  const breedLower = (breed || '').toLowerCase();
+
+  const reminders = {
+    winter: {
+      icon: '❄️',
+      class: 'winter',
+      messages: {
+        dog: `Winter is here — does ${breed||'your dog'} have a coat suited to their breed? Short-haired breeds like Greyhounds and Whippets feel the cold badly and benefit greatly from a well-fitted jacket.`,
+        cat: `Cold weather alert — if ${breed||'your cat'} goes outdoors, check their paws for ice and salt damage. Consider a paw balm suited to their coat type.`,
+        default: `Winter care reminder — make sure your pet's habitat stays warm enough. Check that bedding and enclosures are properly insulated for the colder months.`
+      },
+      cta: 'Score a winter coat →'
+    },
+    spring: {
+      icon: '🌸',
+      class: 'spring',
+      messages: {
+        dog: `Spring is here — flea and tick season is starting. Is your current treatment suited to ${breed||"your dog"}'s size and breed? Some treatments are unsafe for certain breeds.`,
+        cat: `Spring shedding season — is your grooming brush right for ${breed||"your cat"}'s coat type? The wrong brush can cause skin irritation.`,
+        default: `Spring check-up time — review your pet's supplements and diet as activity levels increase in warmer weather.`
+      },
+      cta: 'Score a flea treatment →'
+    },
+    summer: {
+      icon: '☀️',
+      class: 'summer',
+      messages: {
+        dog: `Summer heat warning — brachycephalic breeds like Bulldogs and Pugs are especially vulnerable to overheating. Make sure ${breed||"your dog"}'s harness allows proper airflow.`,
+        cat: `Summer grooming — long-haired breeds like ${breed||"your cat"} may benefit from a summer trim. Check your grooming tools are right for their coat.`,
+        default: `Summer care — ensure your pet has adequate shade, fresh water and appropriate bedding for warmer temperatures.`
+      },
+      cta: 'Score a summer product →'
+    },
+    autumn: {
+      icon: '🍂',
+      class: 'autumn',
+      messages: {
+        dog: `Autumn is here — leaves and mud mean more grooming. Is your shampoo and brush suited to ${breed||"your dog"}'s coat for the wet season ahead?`,
+        cat: `Autumn prep — as temperatures drop, ${breed||"your cat"} may spend more time indoors. Is their bed and enrichment suitable for more indoor time?`,
+        default: `Autumn check — review your pet's diet and supplements as we head into the colder months. Nutritional needs can change with the seasons.`
+      },
+      cta: 'Score an autumn product →'
+    }
+  };
+
+  const s = reminders[season];
+  const msg = petLower === 'cat' ? s.messages.cat : petLower === 'dog' ? s.messages.dog : s.messages.default;
+  return { icon: s.icon, cls: s.class, msg, cta: s.cta, season };
+}
+
+function renderSeasonalBanner() {
+  const wrap = document.getElementById('seasonal-banner-wrap');
+  if (!wrap) return;
+  try {
+    const p = JSON.parse(localStorage.getItem('ps_pet') || '{}');
+    if (!p.type) { wrap.innerHTML = ''; return; }
+    const r = getSeasonalReminder(p.type, p.name ? p.name + ' the ' + p.breed : p.breed);
+    wrap.innerHTML = `<div class="seasonal-banner ${r.cls}">
+      <div class="seasonal-icon">${r.icon}</div>
+      <div class="seasonal-text">
+        <strong>${r.season.charAt(0).toUpperCase() + r.season.slice(1)} Reminder</strong>
+        ${r.msg}
+        <span class="seasonal-cta" onclick="showScreen('tool')">${r.cta}</span>
+      </div>
+    </div>`;
+  } catch(e) { wrap.innerHTML = ''; }
+}
+
+// ══ JOURNAL ══
+let journalStars = 0;
+
+function toggleJournalForm() {
+  const f = document.getElementById('journal-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') {
+    document.getElementById('j-product').value = '';
+    document.getElementById('j-category').value = '';
+    document.getElementById('j-notes').value = '';
+    document.getElementById('j-ai-score').value = '';
+    journalStars = 0;
+    setStars(0);
+  }
+}
+
+function setStars(n) {
+  journalStars = n;
+  document.querySelectorAll('.star').forEach(s => {
+    s.classList.toggle('active', parseInt(s.dataset.val) <= n);
+  });
+}
+
+function saveJournalEntry() {
+  const product = document.getElementById('j-product').value.trim();
+  const category = document.getElementById('j-category').value;
+  if (!product) { showError('Please enter a product name.'); return; }
+  if (!journalStars) { showError('Please add your star rating.'); return; }
+
+  try {
+    const entries = JSON.parse(localStorage.getItem('ps_journal') || '[]');
+    const pet = JSON.parse(localStorage.getItem('ps_pet') || '{}');
+    entries.unshift({
+      id: Date.now(),
+      product, category,
+      stars: journalStars,
+      aiScore: document.getElementById('j-ai-score').value || null,
+      notes: document.getElementById('j-notes').value.trim(),
+      pet: pet.name ? `${pet.name} the ${pet.breed}` : pet.breed || 'Your pet',
+      date: new Date().toISOString()
+    });
+    localStorage.setItem('ps_journal', JSON.stringify(entries));
+    toggleJournalForm();
+    renderJournal();
+  } catch(e) { showError('Could not save your journal entry. Please try again.'); }
+}
+
+function deleteJournalEntry(id) {
+  if (!confirm('Delete this journal entry?')) return;
+  try {
+    const entries = JSON.parse(localStorage.getItem('ps_journal') || '[]').filter(e => e.id !== id);
+    localStorage.setItem('ps_journal', JSON.stringify(entries));
+    renderJournal();
+  } catch(e) {}
+}
+
+function renderJournal() {
+  const listEl = document.getElementById('journal-list');
+  if (!listEl) return;
+  try {
+    const entries = JSON.parse(localStorage.getItem('ps_journal') || '[]');
+    if (!entries.length) {
+      listEl.innerHTML = `<div class="journal-empty">
+        <div class="journal-empty-icon">📔</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">No entries yet</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:18px">Start logging products you've tried for your pet. Over time this becomes an invaluable record.</div>
+        <button class="btn btn-navy" style="max-width:200px;margin:0 auto" onclick="toggleJournalForm()">Log Your First Product</button>
+      </div>`;
+      return;
+    }
+    listEl.innerHTML = `<div class="journal-list">${entries.map(e => `
+      <div class="journal-item">
+        <div class="journal-item-top">
+          <div>
+            <div class="journal-item-title">${e.product}</div>
+            <div class="journal-item-meta">${e.pet} · ${e.category || 'General'} · ${new Date(e.date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}</div>
+          </div>
+          <button onclick="deleteJournalEntry(${e.id})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:4px;-webkit-tap-highlight-color:transparent">✕</button>
+        </div>
+        <div class="journal-scores">
+          <div class="journal-stars">${'★'.repeat(e.stars)}${'☆'.repeat(5-e.stars)}</div>
+          ${e.aiScore ? `<span class="journal-score-badge ai">PetScore: ${e.aiScore}/100</span>` : ''}
+          <span class="journal-score-badge user">Your rating: ${e.stars}/5</span>
+        </div>
+        ${e.notes ? `<div class="journal-item-notes">"${e.notes}"</div>` : ''}
+      </div>`).join('')}</div>`;
+  } catch(e) { listEl.innerHTML = '<p style="color:var(--text-dim);font-size:13px;text-align:center;padding:40px">Unable to load journal.</p>'; }
+}
+
+// ══ WEEKLY PICKS ══
+async function loadWeeklyPicks() {
+  const el = document.getElementById('picks-content');
+  if (!el) return;
+
+  try {
+    const pet = JSON.parse(localStorage.getItem('ps_pet') || '{}');
+    if (!pet.type || !pet.breed) {
+      el.innerHTML = `<div style="text-align:center;padding:50px 24px">
+        <div style="font-size:44px;margin-bottom:14px;opacity:0.3">📅</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">Save your pet profile first</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:18px">Weekly picks are personalised to your pet's breed and health needs. Add your pet details to get started.</div>
+        <button class="btn btn-navy" style="max-width:200px;margin:0 auto" onclick="showScreen('tool')">Add Pet Profile →</button>
+      </div>`;
+      return;
+    }
+
+    // Check if we already loaded picks this week
+    try {
+      const cached = JSON.parse(localStorage.getItem('ps_weekly_picks') || '{}');
+      const weekNum = getWeekNumber();
+      if (cached.week === weekNum && cached.picks) {
+        renderWeeklyPicks(cached.picks, pet);
+        return;
+      }
+    } catch(e) {}
+
+    el.innerHTML = `<div class="weekly-picks-section"><div class="weekly-picks-inner"><div class="picks-loading">Finding the best products for ${pet.name || pet.breed}...</div></div></div>`;
+
+    const prompt = `You are PetScore, a UK pet product expert. Suggest 3 excellent products for this specific pet this week.
+PET: ${pet.type}, ${pet.breed}, ${pet.age || 'adult'}, ${pet.size || 'medium'}, Health: ${pet.health || 'none'}
+Current month: ${new Date().toLocaleString('en-GB', {month:'long'})}
+Respond ONLY with valid JSON:
+{"intro":"<one sentence why these picks suit this pet this week>","picks":[{"name":"<real UK product name>","category":"<category>","reason":"<why perfect for this specific breed, 1 sentence>","score":<88-97>,"searchQuery":"<product name Amazon UK>"},{"name":"<second>","category":"<category>","reason":"<breed-specific reason>","score":<85-94>,"searchQuery":"<product + Amazon UK>"},{"name":"<third>","category":"<category>","reason":"<breed-specific reason>","score":<82-91>,"searchQuery":"<product + Amazon UK>"}]}`;
+
+    const resp = await fetch(`/api/gemini`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+    });
+
+    if (!resp.ok) throw new Error('API error');
+    const data = await resp.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const result = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    try {
+      localStorage.setItem('ps_weekly_picks', JSON.stringify({week: getWeekNumber(), picks: result}));
+    } catch(e) {}
+
+    renderWeeklyPicks(result, pet);
+
+  } catch(e) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px">Unable to load picks right now. Please try again later.</div>`;
+  }
+}
+
+function getWeekNumber() {
+  const d = new Date();
+  const startOfYear = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil(((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+}
+
+function renderWeeklyPicks(result, pet) {
+  const el = document.getElementById('picks-content');
+  const petLabel = pet.name ? `${pet.name} the ${pet.breed}` : `your ${pet.breed}`;
+  const weekDate = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+
+  el.innerHTML = `
+    <div class="weekly-picks-section">
+      <div class="weekly-picks-inner">
+        <div class="weekly-picks-header">
+          <div>
+            <div class="weekly-picks-title">This Week's Top Picks</div>
+            <div class="weekly-picks-sub">Personalised for ${petLabel} · Week of ${weekDate}</div>
+          </div>
+          <div class="weekly-picks-badge">Updated Weekly</div>
+        </div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:16px;line-height:1.6">${result.intro}</p>
+        <div class="picks-grid">
+          ${result.picks.map((p, i) => `
+            <div class="pick-card" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(p.searchQuery)}','_blank')">
+              <div class="pick-rank">Pick #${i+1} · ${p.category}</div>
+              <div class="pick-name">${p.name}</div>
+              <div class="pick-reason">${p.reason}</div>
+              <div class="pick-score">PetScore ${p.score}/100</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 22px;box-shadow:var(--shadow-sm)">
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.6">⚠ Weekly picks are AI-generated suggestions based on your pet's profile. Always verify suitability for your specific pet and consult a vet for health-related products. Picks refresh every Monday.</p>
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="refreshPicks()">↻ Refresh Picks</button>
+    </div>`;
+}
+
+function refreshPicks() {
+  try { localStorage.removeItem('ps_weekly_picks'); } catch(e) {}
+  loadWeeklyPicks();
+}
+
+// ══ SCORE COMPARISON ══
+function renderScoreComparison() {
+  const el = document.getElementById('comparison-list');
+  if (!el) return;
+  try {
+    const history = JSON.parse(localStorage.getItem('ps_history') || '[]');
+    const singles = history.filter(h => h.mode === 'single' && h.data?.overallScore);
+    if (!singles.length) {
+      el.innerHTML = '<div class="comparison-empty">Run your first score to see your top products here.</div>';
+      return;
+    }
+    const sorted = singles.sort((a,b) => b.data.overallScore - a.data.overallScore).slice(0, 5);
+    const max = sorted[0].data.overallScore;
+    const petName = sorted[0].pet?.name ? `${sorted[0].pet.name} the ${sorted[0].pet.breed}` : sorted[0].pet?.breed || 'Your pet';
+
+    el.innerHTML = `
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">You've scored <strong style="color:var(--navy)">${singles.length} product${singles.length!==1?'s':''}</strong> for ${petName}. Here are your top performers:</p>
+      <div class="comparison-list">
+        ${sorted.map((item, i) => {
+          const col = scoreColour(item.data.overallScore);
+          const positions = ['🥇','🥈','🥉','4th','5th'];
+          return `<div class="comparison-row">
+            <div class="comparison-pos" style="background:${col}">${i < 3 ? positions[i] : i+1}</div>
+            <div class="comparison-info">
+              <div class="comparison-name">${item.data.petSummary || item.product?.category || 'Product'}</div>
+              <div class="comparison-pet">${new Date(item.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+            </div>
+            <div class="comparison-bar-wrap">
+              <div class="comparison-bar-track"><div class="comparison-bar-fill" style="width:${(item.data.overallScore/max)*100}%;background:${col}"></div></div>
+            </div>
+            <div class="comparison-score" style="color:${col}">${item.data.overallScore}</div>
+            ${i === 0 ? '<div class="best-badge">Best</div>' : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = '<div class="comparison-empty">Unable to load comparison.</div>';
+  }
+}
+
+// showScreen already updated above
+
+
+// ══ ERROR HANDLING ══
+let errorTimeout = null;
+function showError(msg) {
+  const toast = document.getElementById('error-toast');
+  const msgEl = document.getElementById('error-toast-msg');
+  msgEl.textContent = msg || 'Something went wrong. Please try again.';
+  toast.classList.add('show');
+  if (errorTimeout) clearTimeout(errorTimeout);
+  errorTimeout = setTimeout(() => hideError(), 6000);
+}
+function hideError() {
+  document.getElementById('error-toast').classList.remove('show');
+}
+
+// Replace all alert() calls for errors with showError()
+// Patch runAnalysis error handler
+const _origRunAnalysis = runAnalysis;
+
+// ══ EMAIL CAPTURE ══
+function saveEmail() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email || !email.includes('@')) {
+    showError('Please enter a valid email address.');
+    return;
+  }
+  try { localStorage.setItem('ps_email', email); } catch(e) {}
+  document.getElementById('email-success').classList.add('show');
+  document.getElementById('email-input').value = '';
+  document.getElementById('email-input').disabled = true;
+  document.querySelector('.email-capture-form .btn-gold').disabled = true;
+  document.querySelector('.email-capture-form .btn-gold').textContent = 'Subscribed ✓';
+}
+
+// Load email state on welcome
+function checkEmailState() {
+  try {
+    const saved = localStorage.getItem('ps_email');
+    if (saved) {
+      const inp = document.getElementById('email-input');
+      const btn = document.querySelector('.email-capture-form .btn-gold');
+      if (inp) { inp.value = saved; inp.disabled = true; }
+      if (btn) { btn.disabled = true; btn.textContent = 'Subscribed ✓'; }
+      const succ = document.getElementById('email-success');
+      if (succ) succ.classList.add('show');
+    }
+  } catch(e) {}
+}
+
+// ══ FEEDBACK ══
+function submitFeedback(type) {
+  const btns = document.getElementById('feedback-btns');
+  const thanks = document.getElementById('feedback-thanks');
+  if (btns) btns.style.display = 'none';
+  if (thanks) thanks.style.display = 'block';
+  
+  // Save feedback to history
+  try {
+    const feedback = JSON.parse(localStorage.getItem('ps_feedback') || '[]');
+    feedback.push({
+      type,
+      date: new Date().toISOString(),
+      report: lastResults?.data?.petSummary || 'Unknown'
+    });
+    localStorage.setItem('ps_feedback', JSON.stringify(feedback));
+  } catch(e) {}
+}
+
+function resetFeedback() {
+  const btns = document.getElementById('feedback-btns');
+  const thanks = document.getElementById('feedback-thanks');
+  if (btns) { btns.style.display = 'flex'; }
+  if (thanks) thanks.style.display = 'none';
+  document.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('selected-up','selected-down'));
+}
+
+// ══ UPDATE SHOWSCREEN FOR LEGAL ══
+function showScreen(name) {
+  ['welcome','tool','history','journal','picks','legal'].forEach(s => {
+    const el = document.getElementById('screen-'+s);
+    if (el) el.style.display = s === name ? 'block' : 'none';
+  });
+  ['tool','history','journal','picks'].forEach(btn => {
+    const el = document.getElementById('nav-'+btn);
+    if (el) el.classList.toggle('active-nav', btn === name);
+  });
+  if (name === 'history') { renderHistory(); renderScoreComparison(); }
+  if (name === 'tool') { loadSavedPetProfile(); renderSeasonalBanner(); }
+  if (name === 'journal') renderJournal();
+  if (name === 'picks') loadWeeklyPicks();
+  if (name === 'welcome') { checkEmailState(); loadDailyTips(); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══ ADD LEGAL LINK TO FOOTER ══
+document.addEventListener('DOMContentLoaded', () => {
+  const footer = document.querySelector('footer');
+  if (footer) {
+    footer.innerHTML += ' &middot; <span style="cursor:pointer;text-decoration:underline" onclick="showScreen(&quot;legal&quot;)">Privacy Policy &amp; Terms</span>';
+  }
+  // Reset feedback bar on new results
+  const observer = new MutationObserver(() => resetFeedback());
+  const resultsEl = document.getElementById('results-section');
+  if (resultsEl) observer.observe(resultsEl, {attributes:true, attributeFilter:['class']});
+});
+
+
+// ══ DAILY TIPS ══
+async function loadDailyTips() {
+  const section = document.getElementById('daily-tips-section');
+  const contentEl = document.getElementById('daily-tips-content');
+  const titleEl = document.getElementById('daily-tips-title');
+  const subEl = document.getElementById('daily-tips-sub');
+  if (!section || !contentEl) return;
+
+  try {
+    const pet = JSON.parse(localStorage.getItem('ps_pet') || '{}');
+    if (!pet.type || !pet.breed) {
+      section.style.display = 'block';
+      contentEl.innerHTML = `<div class="tips-no-profile">Save your pet profile to get personalised daily tips. <a onclick="showScreen('tool')">Add your pet →</a></div>`;
+      return;
+    }
+
+    // Check cache — only regenerate once per day
+    try {
+      const cached = JSON.parse(localStorage.getItem('ps_daily_tips') || '{}');
+      const today = new Date().toDateString();
+      if (cached.date === today && cached.tips && cached.petBreed === pet.breed) {
+        renderDailyTips(cached.tips, pet);
+        section.style.display = 'block';
+        return;
+      }
+    } catch(e) {}
+
+    // Show loading
+    section.style.display = 'block';
+    contentEl.innerHTML = `<div class="tips-loading"><div class="tips-loading-ring"></div>Generating today's tips for your ${pet.breed}...</div>`;
+
+    const petLabel = pet.name ? `${pet.name} the ${pet.breed} ${pet.type}` : `${pet.breed} ${pet.type}`;
+    const month = new Date().toLocaleString('en-GB', {month:'long'});
+
+    const prompt = `You are a UK expert on pet breeds and care. Generate 3 specific, genuinely useful daily tips for this pet owner. Each tip must be directly relevant to this exact breed.
+
+PET: ${petLabel}, Age: ${pet.age || 'adult'}, Size: ${pet.size || 'not specified'}, Health: ${pet.health || 'none noted'}
+Current month: ${month}
+
+Tips should cover different areas — e.g. health, nutrition, grooming, behaviour, seasonal care, product advice. Be specific to the ${pet.breed} breed — mention breed-specific traits, tendencies or health concerns where relevant.
+
+Respond ONLY with valid JSON, no markdown:
+{"petLabel":"<e.g. Your French Bulldog>","tips":[{"category":"<2-3 word category e.g. Health Watch>","icon":"<single relevant emoji>","tip":"<2-3 sentence specific actionable tip for this exact breed>"},{"category":"<category>","icon":"<emoji>","tip":"<tip>"},{"category":"<category>","icon":"<emoji>","tip":"<tip>"}]}`;
+
+    const resp = await fetch(`/api/gemini`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+    });
+
+    if (!resp.ok) throw new Error('Could not load tips');
+    const data = await resp.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const result = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    // Cache for today
+    try {
+      localStorage.setItem('ps_daily_tips', JSON.stringify({
+        date: new Date().toDateString(),
+        petBreed: pet.breed,
+        tips: result
+      }));
+    } catch(e) {}
+
+    renderDailyTips(result, pet);
+
+  } catch(e) {
+    const contentEl = document.getElementById('daily-tips-content');
+    if (contentEl) contentEl.innerHTML = `<div class="tips-no-profile">Unable to load tips right now. <a onclick="refreshDailyTips()">Try again →</a></div>`;
+  }
+}
+
+function renderDailyTips(result, pet) {
+  const contentEl = document.getElementById('daily-tips-content');
+  const titleEl = document.getElementById('daily-tips-title');
+  const subEl = document.getElementById('daily-tips-sub');
+  if (!contentEl) return;
+
+  const petLabel = pet.name ? `Today's Tips for ${pet.name}` : `Today's Tips for Your ${pet.breed}`;
+  if (titleEl) titleEl.textContent = petLabel;
+  if (subEl) subEl.textContent = `Personalised for your ${pet.breed} · ${new Date().toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'})}`;
+
+  contentEl.innerHTML = `<div class="tips-grid">${result.tips.map(t => `
+    <div class="tip-card">
+      <div class="tip-category">${t.icon} ${t.category}</div>
+      <div class="tip-text">${t.tip}</div>
+    </div>`).join('')}</div>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:12px;line-height:1.5">⚠ Tips are AI-generated based on general breed knowledge. Always consult a vet for health concerns.</p>`;
+}
+
+function refreshDailyTips() {
+  try { localStorage.removeItem('ps_daily_tips'); } catch(e) {}
+  loadDailyTips();
+}
+
+</script>
+</body>
+</html>
